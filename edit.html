@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ライブをメモするLivelog</title>
+</head>
+<body>
+
+<h1>Livelog</h1>
+
+<hr>
+
+<h2 id="pageTitle">ライブ情報登録</h2>
+
+<p>TITLE<br>
+<input type="text" id="title"></p>
+
+<p>DATE<br>
+<input type="text" id="date"></p>
+
+<p>OPEN <input type="text" id="open"> START <input type="text" id="start"></p>
+
+<p>AREA <input type="text" id="area"> PLACE <input type="text" id="place"></p>
+
+<p>ARTIST<br>
+<input type="text" id="artist"></p>
+
+<button onclick="liveDataSave();">登録</button>
+<button onclick="location.href='index.html';">キャンセル</button>
+
+<hr>
+
+<p>&copy; littlebird</p>
+
+<script>
+
+function $(id){return document.getElementById(id);}
+
+if(localStorage.length > 0) {
+  // データが登録されている場合、番号をデータの件数+1にする
+  var count = localStorage.length;
+} else {
+  // データが登録されていない場合、番号を0にする
+  var count = 0;
+}
+
+// URLのパラメータを取得
+var urlParam = location.search.substring(1);
+
+// URLにパラメータが存在する場合
+if(urlParam) {
+  // 「&」が含まれている場合は「&」で分割
+  var param = urlParam.split('&');
+
+  // パラメータを格納する用の配列を用意
+  var paramArray = [];
+
+  // 用意した配列にパラメータを格納
+  for (i = 0; i < param.length; i++) {
+    var paramItem = param[i].split('=');
+    paramArray[paramItem[0]] = paramItem[1];
+  }
+
+  if(paramArray.live) {
+    // live=xxというパラメータが存在したら、番号にその値を代入
+    var count = paramArray.live;
+    $("pageTitle").innerText = "ライブ情報編集";
+    // その番号のデータを取り出して各フォームに入力状態にする
+    item = JSON.parse(
+      localStorage.getItem("live" + count)
+    );
+    $("title").value = item.title;
+    $("date").value = item.date;
+    $("open").value = item.open;
+    $("start").value = item.start;
+    $("area").value = item.area;
+    $("place").value = item.place;
+    $("artist").value = item.artist;
+  }
+
+}
+
+function liveDataSave() {
+  var dataItem = {
+    "title":$("title").value,
+    "date":$("date").value,
+    "open":$("open").value,
+    "start":$("start").value,
+    "area":$("area").value,
+    "place":$("place").value,
+    "artist":$("artist").value
+  }
+  localStorage.setItem(
+    "live" + count,
+    JSON.stringify(dataItem)
+  );
+  location.href = "index.html";
+}
+
+</script>
+
+</body>
+</html>

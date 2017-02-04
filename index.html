@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ライブをメモするLivelog</title>
+</head>
+<body>
+
+<h1>Livelog</h1>
+
+<p>ライブをメモするLivelogへようこそ。</p>
+
+<hr>
+
+<h2>ライブ一覧</h2>
+
+<ul id="info">
+</ul>
+
+<button onclick="location.href='edit.html';">新規登録</button>
+<button onclick="allDataClear();">データクリア</button>
+
+<hr>
+
+<p>&copy; littlebird</p>
+
+<script>
+
+function $(id){return document.getElementById(id);}
+
+if(localStorage.length > 0) {
+  var key = new Array();
+  var item = new Array();
+  for(var i=0; i<localStorage.length; i++) {
+    key[i] = localStorage.key(i);
+    item[i] = JSON.parse(
+      localStorage.getItem(key[i])
+    );
+    $("info").innerHTML += "<li><p>" + item[i].date + "</p><p>" + item[i].title + "＠" + item[i].area + " " + item[i].place + "</p><p>OPEN " + item[i].open + " / START " + item[i].start + "</p><p>出演：" + item[i].artist + "</p><p><a href='edit.html?live=" + i + "'>編集</a></p></li>"
+  }
+} else {
+    $("info").innerHTML += "<li>ライブが登録されていません。</li>"
+}
+
+function allDataClear() {
+  window.localStorage.clear();
+  window.location.reload();
+}
+
+</script>
+
+</body>
+</html>
