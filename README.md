@@ -5,6 +5,8 @@
 
 https://livelogjp.github.io/livelog-alpha/
 
+※最終的にはMonacaで開発し、iOS/Androidアプリとしてリリースすることを目標としています。
+
 ## ご利用上の注意
 
 - 本ツールは、JavaScriptのlocalStorageのみを使用しているため、登録したデータはあなたがお使いのブラウザ（端末）内に保存されます。
