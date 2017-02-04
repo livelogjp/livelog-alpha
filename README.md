@@ -1,6 +1,6 @@
 # livelog-alpha
 
-ライブ情報をメモする「Livelog」アルファ版です。  
+ライブ情報をメモする「Livelog」のアルファ版です。  
 下記URLで実際に開発中のプロトタイプを使用してお試しいただけます。
 
 https://livelogjp.github.io/livelog-alpha/
