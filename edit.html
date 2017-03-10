@@ -23,15 +23,16 @@
 
 <p>AREA <input type="text" id="area"> PLACE <input type="text" id="place"></p>
 
-<p>ARTIST<br>
-<input type="text" id="artist"></p>
+<div>ARTIST
+<p><input type="text" id="artist0" class="artist"> <button onclick="artistInputAdd(this);">+</button></p>
+</div>
 
 <button onclick="liveDataSave();">登録</button>
 <button onclick="location.href='index.html';">キャンセル</button>
 
 <hr>
 
-<p>&copy; littlebird</p>
+<p>Developed on <a href="https://github.com/livelogjp/livelog-alpha">GitHub</a>.</p>
 
 <script>
 
@@ -65,37 +66,88 @@ if(urlParam) {
   if(paramArray.live) {
     // live=xxというパラメータが存在したら、番号にその値を代入
     var count = paramArray.live;
-    $("pageTitle").innerText = "ライブ情報編集";
-    // その番号のデータを取り出して各フォームに入力状態にする
+    //ページタイトルを「ライブ情報編集」に変更
+    $('pageTitle').innerText = 'ライブ情報編集';
+    // その番号のデータを取り出してitemオブジェクトへ一次保存
     item = JSON.parse(
-      localStorage.getItem("live" + count)
+      localStorage.getItem('live' + count)
     );
-    $("title").value = item.title;
-    $("date").value = item.date;
-    $("open").value = item.open;
-    $("start").value = item.start;
-    $("area").value = item.area;
-    $("place").value = item.place;
-    $("artist").value = item.artist;
+    // itemオブジェクトの内容を取り出して各テキストボックスに入力状態にする
+    $('title').value = item.title;
+    $('date').value = item.date;
+    $('open').value = item.open;
+    $('start').value = item.start;
+    $('area').value = item.area;
+    $('place').value = item.place;
+    $('artist0').value = item.artists.artist0;
+    //複数アーティストが登録されている場合、テキストボックスを増やしてさらにデータを入力
+    var dataArtistsNum = Object.keys(item.artists).length;
+    if(dataArtistsNum > 1) {
+      for(var i=1; i<dataArtistsNum; i++) {
+        var currentArtistInput = document.getElementsByClassName('artist')[i-1];
+        var artistAddButton = currentArtistInput.nextElementSibling;
+        var nextArtistForm = document.createElement('p');
+        nextArtistForm.innerHTML = '<input type="text" id="artist' + i + '" class="artist"> <button onclick="artistInputAdd(this);">+</button>';
+        currentArtistInput.parentNode.appendChild(nextArtistForm);
+        currentArtistInput.parentNode.removeChild(artistAddButton);
+        nextArtistId = 'artist' + i;
+        nextArtistInput = document.getElementsByClassName('artist')[i];
+        nextArtistInput.value = item.artists[nextArtistId];
+      }
+    }
   }
 
 }
 
+function artistInputAdd(obj) {
+  var currentInputId = obj.previousElementSibling.getAttribute('id');
+  var currentArtistNum = Number(currentInputId.replace('artist', ''));
+  var nextArtistInput = document.createElement('p');
+  nextArtistInput.innerHTML = '<input type="text" id="artist' + (currentArtistNum + 1) + '" class="artist"> <button onclick="artistInputAdd(this);">+</button>';
+  obj.parentNode.parentNode.appendChild(nextArtistInput);
+  obj.parentNode.removeChild(obj);
+}
+
 function liveDataSave() {
-  var dataItem = {
-    "title":$("title").value,
-    "date":$("date").value,
-    "open":$("open").value,
-    "start":$("start").value,
-    "area":$("area").value,
-    "place":$("place").value,
-    "artist":$("artist").value
+
+  if(urlParam && paramArray.live) {
+    item = JSON.parse(
+      localStorage.getItem('live' + count)
+    );
+  } else {
+    var item = {};
   }
+
+  item.title = $('title').value;
+  item.date = $('date').value;
+  item.open = $('open').value;
+  item.start = $('start').value;
+  item.area = $('area').value;
+  item.place = $('place').value;
+
+  if(urlParam && paramArray.live) {
+  } else {
+    item.artists = {};
+  }
+
+  item.artists.artist0 = $('artist0').value;
+
+  var allArtistNum = document.getElementsByClassName('artist').length;
+  var artistList = document.getElementsByClassName('artist');
+
+  if (allArtistNum > 1) {
+    for(var i=1; i<allArtistNum; i++) {
+      targetArtistId = artistList[i].id;
+      item.artists[targetArtistId] = $(targetArtistId).value;
+    }
+  }
+
   localStorage.setItem(
-    "live" + count,
-    JSON.stringify(dataItem)
+    'live' + count,
+    JSON.stringify(item)
   );
-  location.href = "index.html";
+  location.href = 'index.html';
+
 }
 
 </script>
