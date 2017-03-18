@@ -38,33 +38,36 @@
 
 function $(id){return document.getElementById(id);}
 
+//☆「新規登録」用のデータ番号をセットする処理
+
 if(localStorage.length > 0) {
-  // データが登録されている場合、番号をデータの件数+1にする
+  // localStorageにデータが登録されている場合、番号をデータの件数+1にする
   var count = localStorage.length;
 } else {
-  // データが登録されていない場合、番号を0にする
+  // localStorageにデータが登録されていない場合、番号を0にする
   var count = 0;
 }
 
-// URLのパラメータを取得
+//☆「情報編集」用に既存データを読み込む処理
+
+// URLのパラメータから「?」を除いた文字列を取得
 var urlParam = location.search.substring(1);
 
 // URLにパラメータが存在する場合
 if(urlParam) {
-  // 「&」が含まれている場合は「&」で分割
+  // パラメータの「?」以降の文字列を「&」で分割して配列paramに代入
   var param = urlParam.split('&');
 
-  // パラメータを格納する用の配列を用意
   var paramArray = [];
 
-  // 用意した配列にパラメータを格納
+  //パラメータのaaa=bbbという部分をペアで取り出して連想配列paramArrayに代入
   for (i = 0; i < param.length; i++) {
     var paramItem = param[i].split('=');
     paramArray[paramItem[0]] = paramItem[1];
   }
 
   if(paramArray.live) {
-    // live=xxというパラメータが存在したら、番号にその値を代入
+    // live=xxというパラメータが存在したら、count番号にその値を代入
     var count = paramArray.live;
     //ページタイトルを「ライブ情報編集」に変更
     $('pageTitle').innerText = 'ライブ情報編集';
@@ -72,7 +75,7 @@ if(urlParam) {
     item = JSON.parse(
       localStorage.getItem('live' + count)
     );
-    // itemオブジェクトの内容を取り出して各テキストボックスに入力状態にする
+    // itemオブジェクトの内容を取り出して各フォームに入力状態にする
     $('title').value = item.title;
     $('date').value = item.date;
     $('open').value = item.open;
@@ -80,18 +83,21 @@ if(urlParam) {
     $('area').value = item.area;
     $('place').value = item.place;
     $('artist0').value = item.artists.artist0;
-    //複数アーティストが登録されている場合、テキストボックスを増やしてさらにデータを入力
+    //複数アーティストが登録されていたら、artist1以降の分だけフォームを増やして値を入力
     var dataArtistsNum = Object.keys(item.artists).length;
     if(dataArtistsNum > 1) {
       for(var i=1; i<dataArtistsNum; i++) {
         var currentArtistInput = document.getElementsByClassName('artist')[i-1];
         var artistAddButton = currentArtistInput.nextElementSibling;
+        //次の番号のアーティスト欄と「+」ボタンを生成し、一つ前のアーティストの下段に挿入
         var nextArtistForm = document.createElement('p');
         nextArtistForm.innerHTML = '<input type="text" id="artist' + i + '" class="artist"> <button onclick="artistInputAdd(this);">+</button>';
         currentArtistInput.parentNode.appendChild(nextArtistForm);
+        //一つ前のアーティスト横の「+」ボタンを削除
         currentArtistInput.parentNode.removeChild(artistAddButton);
         nextArtistId = 'artist' + i;
         nextArtistInput = document.getElementsByClassName('artist')[i];
+        //追加したアーティスト欄に既存の値を入力
         nextArtistInput.value = item.artists[nextArtistId];
       }
     }
@@ -99,25 +105,32 @@ if(urlParam) {
 
 }
 
+//☆「+」ボタンが押された時の処理
 function artistInputAdd(obj) {
   var currentInputId = obj.previousElementSibling.getAttribute('id');
   var currentArtistNum = Number(currentInputId.replace('artist', ''));
+  //次の番号のアーティスト欄と「+」ボタンを生成し、下の段に挿入
   var nextArtistInput = document.createElement('p');
   nextArtistInput.innerHTML = '<input type="text" id="artist' + (currentArtistNum + 1) + '" class="artist"> <button onclick="artistInputAdd(this);">+</button>';
   obj.parentNode.parentNode.appendChild(nextArtistInput);
+  //クリックされた「+」ボタン自体は削除する
   obj.parentNode.removeChild(obj);
 }
 
+//☆「登録」ボタンが押された時の処理
 function liveDataSave() {
 
   if(urlParam && paramArray.live) {
+    //URLにlive=xxというパラメータがあったら、localStorageから該当データを読み込み
     item = JSON.parse(
       localStorage.getItem('live' + count)
     );
   } else {
+    //URLにパラメータがなかったら、登録用のオブジェクトを初期化
     var item = {};
   }
 
+  //登録用のオブジェクトに各フォームの値を代入
   item.title = $('title').value;
   item.date = $('date').value;
   item.open = $('open').value;
@@ -125,27 +138,43 @@ function liveDataSave() {
   item.area = $('area').value;
   item.place = $('place').value;
 
-  if(urlParam && paramArray.live) {
-  } else {
+  if(!(urlParam && paramArray.live)) {
+    //URLにパラメータがない場合は、artists欄を多次元配列として初期化
     item.artists = {};
+    //一人目のアーティストも多次元配列として初期化
+    item.artists.artist0 = {};
   }
 
-  item.artists.artist0 = $('artist0').value;
+  //一人目のアーティスト名をフォームの値から代入
+  item.artists.artist0.name = $('artist0').value;
 
+  if(!(urlParam && paramArray.live)) {
+    //一人目のアーティストのセットリストも多次元配列として初期化
+    item.artists.artist0.setlist = {};
+    item.artists.artist0.members = {};
+  }
+
+  //フォームのアーティスト欄を配列として取得
   var allArtistNum = document.getElementsByClassName('artist').length;
   var artistList = document.getElementsByClassName('artist');
 
   if (allArtistNum > 1) {
+    //複数のアーティスト欄が表示されている場合、artist1以降の値をオブジェクトに代入
     for(var i=1; i<allArtistNum; i++) {
       targetArtistId = artistList[i].id;
-      item.artists[targetArtistId] = $(targetArtistId).value;
+      item.artists[targetArtistId] = {};
+      item.artists[targetArtistId].name = $(targetArtistId).value;
+      item.artists[targetArtistId].setlist = {};
+      item.artists[targetArtistId].members = {};
     }
   }
 
+  //登録用オブジェクトの内容をcount番号のlocalStorageへ上書き保存
   localStorage.setItem(
     'live' + count,
     JSON.stringify(item)
   );
+  //登録後、一覧画面へ遷移
   location.href = 'index.html';
 
 }

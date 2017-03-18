@@ -29,7 +29,7 @@
 
 function $(id){return document.getElementById(id);}
 
-//連想配列のvalueを指定した区切り文字で文字列として連結
+//連想配列の値を指定した文字列で連結する関数
 function arrayJoin(delimiter, object) {
   var ret = '';
   var lastkey = Object.keys(object).pop();
@@ -39,25 +39,54 @@ function arrayJoin(delimiter, object) {
   return ret;
 }
 
+//☆localStorageにデータが登録されていたら一覧表示する処理
 if(localStorage.length > 0) {
+
+  //localStorageのKey-Valueを格納するための配列を生成
   var key = new Array();
   var item = new Array();
+
   for(var i=0; i<localStorage.length; i++) {
+
+    //localStorageのKey-Value値を各配列に代入
     key[i] = localStorage.key(i);
     item[i] = JSON.parse(
       localStorage.getItem(key[i])
     );
-    var artistsItem = Object.values(item[i].artists);
+
+    //artist0〜artist*の値を配列で取得
+    var artistsItemLabel = Object.keys(item[i].artists);
+
+    //アーティスト名一覧を格納するための配列を作成
+    var artistsItem = [];
+
+    //アーティスト用の配列に登録されている分だけのアーティスト名を入力
+    for (j = 0; j < artistsItemLabel.length; j++) {
+      var currentArtsitLabel = 'artist' + j;
+      artistsItem[j] = item[i].artists[currentArtsitLabel].name;
+    }
+
+    //アーティスト名の配列をつなげて文字列に変換
     var artistsItemJoin = arrayJoin('、', artistsItem);
+
+    //ライブ情報を表示
     $('info').innerHTML += '<li><p>' + item[i].date + '</p><p>' + item[i].title + '＠' + item[i].area + ' ' + item[i].place + '</p><p>OPEN ' + item[i].open + ' / START ' + item[i].start + '</p><p>出演：' + artistsItemJoin + '</p><p><a href="edit.html?live=' + i + '">編集</a></p></li>';
+
   }
+
 } else {
-    $('info').innerHTML += '<li>ライブが登録されていません。</li>';
+  //データが登録されていなかったら文言を表示
+  $('info').innerHTML += '<li>ライブが登録されていません。</li>';
 }
 
+//☆データを全削除する処理
 function allDataClear() {
-  window.localStorage.clear();
-  window.location.reload();
+  //確認ダイアログで「OK」を押したら処理を実行
+  if(window.confirm('全てのライブ情報を削除してよろしいですか？')){
+    window.localStorage.clear();
+    //データ削除が終わったら、情報を最新化するためにリロード
+    window.location.reload();
+  }
 }
 
 </script>
