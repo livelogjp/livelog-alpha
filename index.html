@@ -9,11 +9,7 @@
 
 <h1>Livelog</h1>
 
-<p>ライブをメモするLivelogへようこそ。</p>
-
 <hr>
-
-<h2>ライブ一覧</h2>
 
 <ul id="info">
 </ul>
@@ -70,7 +66,7 @@ if(localStorage.length > 0) {
     var artistsItemJoin = arrayJoin('、', artistsItem);
 
     //ライブ情報を表示
-    $('info').innerHTML += '<li><p>' + item[i].date + '</p><p>' + item[i].title + '＠' + item[i].area + ' ' + item[i].place + '</p><p>OPEN ' + item[i].open + ' / START ' + item[i].start + '</p><p>出演：' + artistsItemJoin + '</p><p><a href="edit.html?live=' + i + '">編集</a></p></li>';
+    $('info').innerHTML += '<li><p>' + item[i].date + '</p><p>' + item[i].title + '＠' + item[i].area + ' ' + item[i].place + '</p><p>OPEN ' + item[i].open + ' / START ' + item[i].start + '</p><p>出演：' + artistsItemJoin + '</p><p><a href="detail.html?live=' + i + '">詳細</a></p></li>';
 
   }
 

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ライブをメモするLivelog</title>
+</head>
+<body>
+
+<p><a href="index.html">＜</a>　<span id="edit"></span></p>
+
+<hr>
+
+<h1 id="title"></h1>
+
+<p>DATE <span id="date"></span></p>
+
+<p>OPEN <span id="open"></span> START <span id="start"></span></p>
+
+<p>AREA <span id="area"></span> PLACE <span id="place"></span></p>
+
+<div>ARTIST
+<ul>
+  <li id="artist0"></li>
+</ul>
+</div>
+
+<hr>
+
+<p>Developed on <a href="https://github.com/livelogjp/livelog-alpha">GitHub</a>.</p>
+
+<script>
+
+function $(id){return document.getElementById(id);}
+
+//☆URLのパラメータを元に該当のライブ情報を読み込む処理
+
+// URLのパラメータから「?」を除いた文字列を取得
+var urlParam = location.search.substring(1);
+
+// URLにパラメータが存在する場合
+if(urlParam) {
+  // パラメータの「?」以降の文字列を「&」で分割して配列paramに代入
+  var param = urlParam.split('&');
+
+  var paramArray = [];
+
+  //パラメータのaaa=bbbという部分をペアで取り出して連想配列paramArrayに代入
+  for (i = 0; i < param.length; i++) {
+    var paramItem = param[i].split('=');
+    paramArray[paramItem[0]] = paramItem[1];
+  }
+
+  if(paramArray.live) {
+    // live=xxというパラメータが存在したら、count番号にその値を代入
+    var count = paramArray.live;
+    // その番号のデータを取り出してitemオブジェクトへ一次保存
+    item = JSON.parse(
+      localStorage.getItem('live' + count)
+    );
+    //該当のライブ情報を編集するリンクを表示
+    $('edit').innerHTML = '<a href="edit.html?live=' + count + '">編集</a>';
+    // itemオブジェクトの内容を取り出してページ上に表示する
+    $('title').innerHTML = item.title;
+    $('date').innerHTML = item.date;
+    $('open').innerHTML = item.open;
+    $('start').innerHTML = item.start;
+    $('area').innerHTML = item.area;
+    $('place').innerHTML = item.place;
+    var dataArtistsNum = Object.keys(item.artists).length;
+
+    //アーティストが1人以上登録されていたら、1人目のアーティスト名を表示
+    if(dataArtistsNum > 0) {
+      $('artist0').innerHTML = '<p>' + item.artists.artist0.name + '（<a href="setlist.html?live=' + count + '&artist=0">編集</a>）</p>';
+      var firstSetlistNum = Object.keys(item.artists.artist0.setlist).length;
+      var firstSetlistItem = Object.values(item.artists.artist0.setlist);
+      if (firstSetlistNum > 0) {
+        var firstArtistList = document.getElementById('artist0');
+        var firstSetlistArea = document.createElement('p');
+        firstSetlistArea.innerText = 'セットリスト';
+        firstArtistList.appendChild(firstSetlistArea);
+        var firstSetlist = document.createElement('ul');
+        firstSetlistArea.appendChild(firstSetlist);
+        for (track in firstSetlistItem) {
+          var additionalTrack = document.createElement('li');
+          additionalTrack.innerText = firstSetlistItem[track];
+          firstSetlist.appendChild(additionalTrack);
+        }
+      }
+    }
+    //複数アーティストが登録されていたら、artist1以降の分だけリスト要素を増やして内容を表示
+    if(dataArtistsNum > 1) {
+      for(var i=1; i<dataArtistsNum; i++) {
+        var nextArtistId = 'artist' + i;
+        var currentArtistId = 'artist' + (i - 1);
+        var currentArtistList = document.getElementById(currentArtistId);
+        var nextArtistList = document.createElement('li');
+        nextArtistList.setAttribute('id', nextArtistId);
+        nextArtistList.innerHTML = '<p>' + item.artists[nextArtistId].name + '（<a href="setlist.html?live=' + count + '&artist=' + i + '">編集</a>）</p>';
+        currentArtistList.parentNode.appendChild(nextArtistList);
+
+        var nextSetlistNum = Object.keys(item.artists[nextArtistId].setlist).length;
+        var nextSetlistItem = Object.values(item.artists[nextArtistId].setlist);
+        if (nextSetlistNum > 0) {
+          var nextSetlistArea = document.createElement('p');
+          nextSetlistArea.innerText = 'セットリスト';
+          nextArtistList.appendChild(nextSetlistArea);
+          var nextSetlist = document.createElement('ul');
+          nextSetlistArea.appendChild(nextSetlist);
+          for (track in nextSetlistItem) {
+            var additionalTrack = document.createElement('li');
+            additionalTrack.innerText = nextSetlistItem[track];
+            nextSetlist.appendChild(additionalTrack);
+          }
+        }
+
+      }
+    }
+  }
+
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ライブをメモするLivelog</title>
+</head>
+<body>
+
+<p><a href="index.html" id="back">＜</a></p>
+
+<hr>
+
+<div id="form">
+
+<h1 id="artist"></h1>
+
+<div>SETLIST
+<p><input type="text" id="track0" class="setlist"> <button onclick="trackInputAdd(this);">+</button></p>
+</div>
+
+<button onclick="liveDataSave();">登録</button>
+<button onclick="location.href='index.html';" id="cancel">キャンセル</button>
+
+</div>
+
+<hr>
+
+<p>Developed on <a href="https://github.com/livelogjp/livelog-alpha">GitHub</a>.</p>
+
+<script>
+
+function $(id){return document.getElementById(id);}
+
+//☆エラーの時にフォームを消してエラー文言を表示する関数
+function displayError() {
+  var errorMessage = document.createElement('p');
+  errorMessage.innerText = 'データが正常に読み込まれませんでした。';
+  var errorLink = document.createElement('p');
+  errorLink.innerHTML = '<a href="index.html">ライブ一覧へ戻る</a>';
+  $('form').innerHTML = '';
+  $('form').appendChild(errorMessage);
+  $('form').appendChild(errorLink);
+}
+
+//☆既存のデータを読み込んでフォーム要素を表示する処理
+
+// URLのパラメータから「?」を除いた文字列を取得
+var urlParam = location.search.substring(1);
+
+// URLにパラメータが存在する場合
+if(urlParam) {
+  // パラメータの「?」以降の文字列を「&」で分割して配列paramに代入
+  var param = urlParam.split('&');
+
+  var paramArray = [];
+
+  //パラメータのaaa=bbbという部分をペアで取り出して連想配列paramArrayに代入
+  for (i = 0; i < param.length; i++) {
+    var paramItem = param[i].split('=');
+    paramArray[paramItem[0]] = paramItem[1];
+  }
+
+  if(paramArray.live && paramArray.artist) {
+    // live=xxというパラメータが存在したら、count番号にその値を代入
+    var count = paramArray.live;
+    var count2 = paramArray.artist;
+    //戻るリンクとキャンセルボタンの遷移先を該当のライブ詳細画面へ変更
+    $('back').setAttribute('href', 'detail.html?live=' + count);
+    $('cancel').setAttribute('onclick', 'location.href="detail.html?live=' + count + '";');
+    // その番号のデータを取り出してitemオブジェクトへ一次保存
+    item = JSON.parse(
+      localStorage.getItem('live' + count)
+    );
+
+    var artistID = 'artist' + count2;
+    $('artist').innerText = item.artists[artistID].name;
+    var dataSetlistNum = Object.keys(item.artists[artistID].setlist).length;
+    //セットリストが1つ以上登録されていたら、1つ目の入力欄に値を挿入
+    if (dataSetlistNum > 0) {
+      $('track0').value = item.artists[artistID].setlist.track0;
+    }
+    if(dataSetlistNum > 1) {
+      for(var i=1; i<dataSetlistNum; i++) {
+        var currentTrackInput = document.getElementsByClassName('setlist')[i-1];
+        var trackAddButton = currentTrackInput.nextElementSibling;
+        //次の番号のアーティスト欄と「+」ボタンを生成し、一つ前のアーティストの下段に挿入
+        var nextTrackForm = document.createElement('p');
+        nextTrackForm.innerHTML = '<input type="text" id="track' + i + '" class="setlist"> <button onclick="trackInputAdd(this);">+</button>';
+        currentTrackInput.parentNode.appendChild(nextTrackForm);
+        //一つ前のアーティスト横の「+」ボタンを削除
+        currentTrackInput.parentNode.removeChild(trackAddButton);
+        nextTrackId = 'track' + i;
+        nextTrackInput = document.getElementsByClassName('setlist')[i];
+        //追加したアーティスト欄に既存の値を入力
+        nextTrackInput.value = item.artists[artistID].setlist[nextTrackId];
+      }
+    }
+
+  } else {
+    //live=xx,artist=yyのどちらかのパラメータがなかったらエラー表示
+    displayError();
+  }
+
+} else {
+  //URLにパラメータそのものがなかったらエラー表示
+  displayError();
+}
+
+//☆セットリストの「+」ボタンが押された時の処理
+function trackInputAdd(obj) {
+  var currentInputId = obj.previousElementSibling.getAttribute('id');
+  var currentTrackNum = Number(currentInputId.replace('track', ''));
+  //次の番号の入力欄と「+」ボタンを生成し、下の段に挿入
+  var nextTrackInput = document.createElement('p');
+  nextTrackInput.innerHTML = '<input type="text" id="track' + (currentTrackNum + 1) + '" class="setlist"> <button onclick="trackInputAdd(this);">+</button>';
+  obj.parentNode.parentNode.appendChild(nextTrackInput);
+  //クリックされた「+」ボタン自体は削除する
+  obj.parentNode.removeChild(obj);
+}
+
+//☆「登録」ボタンが押された時の処理
+function liveDataSave() {
+
+  //live=xxというパラメータを元にlocalStorageから該当データを読み込み
+  item = JSON.parse(
+    localStorage.getItem('live' + count)
+  );
+
+  //一曲目のセットリストをフォームの値から代入
+  item.artists[artistID].setlist.track0 = $('track0').value;
+
+  //フォームのセットリスト欄を配列として取得
+  var allTrackNum = document.getElementsByClassName('setlist').length;
+  var trackList = document.getElementsByClassName('setlist');
+
+  if (allTrackNum > 1) {
+    //複数のセットリスト欄が表示されている場合、track1以降の値をオブジェクトに代入
+    for(var i=1; i<allTrackNum; i++) {
+      targetTrackId = trackList[i].id;
+      item.artists[artistID].setlist[targetTrackId] = $(targetTrackId).value;
+    }
+  }
+
+  //登録用オブジェクトの内容をcount番号のlocalStorageへ上書き保存
+  localStorage.setItem(
+    'live' + count,
+    JSON.stringify(item)
+  );
+  //登録後、一覧画面へ遷移
+  location.href = 'index.html';
+
+}
+
+</script>
+
+</body>
+</html>
