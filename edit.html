@@ -22,11 +22,13 @@
 <p>AREA <input type="text" id="area"> PLACE <input type="text" id="place"></p>
 
 <div>ARTIST
-<p><input type="text" id="artist0" class="artist"> <button onclick="artistInputAdd(this);">+</button></p>
+<p><input type="text" id="artist0" class="artist"><button onclick="artistInputAdd(this);">+</button></p>
 </div>
 
 <button onclick="liveDataSave();">登録</button>
 <button onclick="location.href='index.html';" id="cancel">キャンセル</button>
+
+<p id="delete"></p>
 
 <hr>
 
@@ -39,11 +41,24 @@ function $(id){return document.getElementById(id);}
 //☆「新規登録」用のデータ番号をセットする処理
 
 if(localStorage.length > 0) {
-  // localStorageにデータが登録されている場合、番号をデータの件数+1にする
-  var count = localStorage.length;
+
+  //localStorageのKeyの一覧を格納する配列を生成
+  var key = new Array();
+  //配列keyにライブ番号の一覧を格納
+  for(var i=0; i<localStorage.length; i++) {
+    currentLiveId = localStorage.key(i);
+    key[i] = Number(currentLiveId.replace('live', ''));
+  }
+  //保存されているlivexxの番号のうち最大の整数を取得
+  var maxLiveNum = Math.max.apply(null, key);
+  //最大値+1を次の登録番号として設定
+  var count = maxLiveNum + 1;
+
 } else {
+
   // localStorageにデータが登録されていない場合、番号を0にする
   var count = 0;
+
 }
 
 //☆「情報編集」用に既存データを読み込む処理
@@ -70,6 +85,7 @@ if(urlParam) {
     //戻るリンクとキャンセルボタンの遷移先を該当のライブ詳細画面へ変更
     $('back').setAttribute('href', 'detail.html?live=' + count);
     $('cancel').setAttribute('onclick', 'location.href="detail.html?live=' + count + '";');
+    $('delete').innerHTML = '<button onclick="liveDataDelete();">このライブ情報を削除</button>';
     // その番号のデータを取り出してitemオブジェクトへ一次保存
     item = JSON.parse(
       localStorage.getItem('live' + count)
@@ -88,12 +104,16 @@ if(urlParam) {
       for(var i=1; i<dataArtistsNum; i++) {
         var currentArtistInput = document.getElementsByClassName('artist')[i-1];
         var artistAddButton = currentArtistInput.nextElementSibling;
+        var artistAddButton2 = currentArtistInput.nextElementSibling.nextElementSibling;
         //次の番号のアーティスト欄と「+」ボタンを生成し、一つ前のアーティストの下段に挿入
         var nextArtistForm = document.createElement('p');
-        nextArtistForm.innerHTML = '<input type="text" id="artist' + i + '" class="artist"> <button onclick="artistInputAdd(this);">+</button>';
-        currentArtistInput.parentNode.appendChild(nextArtistForm);
+        nextArtistForm.innerHTML = '<input type="text" id="artist' + i + '" class="artist"><button onclick="artistInputAdd(this);">+</button><button onclick="artistInputDelete(this);">-</button>';
+        currentArtistInput.parentNode.parentNode.appendChild(nextArtistForm);
         //一つ前のアーティスト横の「+」ボタンを削除
         currentArtistInput.parentNode.removeChild(artistAddButton);
+        if(artistAddButton2){
+          currentArtistInput.parentNode.removeChild(artistAddButton2);
+        }
         nextArtistId = 'artist' + i;
         nextArtistInput = document.getElementsByClassName('artist')[i];
         //追加したアーティスト欄に既存の値を入力
@@ -108,12 +128,39 @@ if(urlParam) {
 function artistInputAdd(obj) {
   var currentInputId = obj.previousElementSibling.getAttribute('id');
   var currentArtistNum = Number(currentInputId.replace('artist', ''));
-  //次の番号のアーティスト欄と「+」ボタンを生成し、下の段に挿入
+  //次の番号のアーティスト欄と「+」と「-」ボタンを生成し、下の段に挿入
   var nextArtistInput = document.createElement('p');
-  nextArtistInput.innerHTML = '<input type="text" id="artist' + (currentArtistNum + 1) + '" class="artist"> <button onclick="artistInputAdd(this);">+</button>';
+  nextArtistInput.innerHTML = '<input type="text" id="artist' + (currentArtistNum + 1) + '" class="artist"><button onclick="artistInputAdd(this);">+</button><button onclick="artistInputDelete(this);">-</button>';
   obj.parentNode.parentNode.appendChild(nextArtistInput);
-  //クリックされた「+」ボタン自体は削除する
+  //2回目以降については「+」ボタンの右横の「-」ボタンも削除する
+  var currentInputDelete = obj.nextElementSibling;
+  if (currentInputDelete){
+    obj.parentNode.removeChild(currentInputDelete);
+  }
+  //クリックされた「+」ボタン自体を削除する
   obj.parentNode.removeChild(obj);
+}
+
+//☆「-」ボタンが押された時の処理
+function artistInputDelete(obj) {
+  var currentInputId = obj.previousElementSibling.previousElementSibling.getAttribute('id');
+  var currentArtistNum = Number(currentInputId.replace('artist', ''));
+  //1個前のアーティスト入力欄の隣に「+」ボタンを追加
+  var previousArtistInput = obj.parentNode.previousElementSibling;
+  var previousArtistButton1 = document.createElement('button');
+  previousArtistButton1.setAttribute('onclick', 'artistInputAdd(this);');
+  previousArtistButton1.innerText = '+';
+  previousArtistInput.appendChild(previousArtistButton1);
+  //1個前のアーティスト入力欄の隣に「-」ボタンを追加（最初の入力欄の時は追加しない）
+  if (currentArtistNum > 1) {
+    var previousArtistButton2 = document.createElement('button');
+    previousArtistButton2.setAttribute('onclick', 'artistInputDelete(this);');
+    previousArtistButton2.innerText = '-';
+    previousArtistInput.appendChild(previousArtistButton2);
+  }
+  //該当のアーティスト入力欄を削除
+  var currentArtistInput = obj.parentNode;
+  obj.parentNode.parentNode.removeChild(currentArtistInput);
 }
 
 //☆「登録」ボタンが押された時の処理
@@ -157,15 +204,39 @@ function liveDataSave() {
   var allArtistNum = document.getElementsByClassName('artist').length;
   var artistList = document.getElementsByClassName('artist');
 
+  //localStorageに保存されているアーティスト一覧を配列として取得
+  var dataArtistNum = Object.keys(item.artists).length;
+  var dataArtisList = Object.keys(item.artists);
+
+  //複数のアーティスト欄が表示されている場合、artist1以降の値をオブジェクトに代入
   if (allArtistNum > 1) {
-    //複数のアーティスト欄が表示されている場合、artist1以降の値をオブジェクトに代入
     for(var i=1; i<allArtistNum; i++) {
       targetArtistId = artistList[i].id;
-      item.artists[targetArtistId] = {};
+      //アーティストが未登録の場合artistオブジェクトを初期化
+      if (!item.artists[targetArtistId]) {
+        item.artists[targetArtistId] = {};
+      }
       item.artists[targetArtistId].name = $(targetArtistId).value;
-      item.artists[targetArtistId].setlist = {};
-      item.artists[targetArtistId].members = {};
+      //アーティストのセットリストが未登録の場合setlistオブジェクトを初期化
+      if (!item.artists[targetArtistId].setlist) {
+        item.artists[targetArtistId].setlist = {};
+      }
+      //アーティストのメンバーが未登録の場合membersオブジェクトを初期化
+      if (!item.artists[targetArtistId].members) {
+        item.artists[targetArtistId].members = {};
+      }
     }
+  }
+
+  //アーティスト欄が削除されていたら、削除分のアーティストを登録用オブジェクトから削除
+  if (allArtistNum < dataArtistNum) {
+    diffArtistNum = dataArtistNum - allArtistNum;
+    deleteArtisList = dataArtisList.splice(allArtistNum, diffArtistNum);
+    for (var j in deleteArtisList) {
+      var deleteArtistId = deleteArtisList[j];
+      delete item.artists[deleteArtistId];
+    }
+
   }
 
   //登録用オブジェクトの内容をcount番号のlocalStorageへ上書き保存
@@ -176,6 +247,17 @@ function liveDataSave() {
   //登録後、一覧画面へ遷移
   location.href = 'index.html';
 
+}
+
+//☆「このライブ情報を削除」ボタンが押された時の処理
+function liveDataDelete() {
+  //確認ダイアログで「OK」を押したら処理を実行
+  if(window.confirm('このライブ情報を削除してよろしいですか？')){
+    //該当のライブ情報をlocalStorageから削除
+    localStorage.removeItem('live' + count);
+    //削除実行後、一覧画面へ遷移
+    location.href = 'index.html';
+  }
 }
 
 </script>

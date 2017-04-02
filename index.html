@@ -50,6 +50,8 @@ if(localStorage.length > 0) {
       localStorage.getItem(key[i])
     );
 
+    var count =  Number(key[i].replace('live', ''));
+
     //artist0〜artist*の値を配列で取得
     var artistsItemLabel = Object.keys(item[i].artists);
 
@@ -66,7 +68,7 @@ if(localStorage.length > 0) {
     var artistsItemJoin = arrayJoin('、', artistsItem);
 
     //ライブ情報を表示
-    $('info').innerHTML += '<li><p>' + item[i].date + '</p><p>' + item[i].title + '＠' + item[i].area + ' ' + item[i].place + '</p><p>OPEN ' + item[i].open + ' / START ' + item[i].start + '</p><p>出演：' + artistsItemJoin + '</p><p><a href="detail.html?live=' + i + '">詳細</a></p></li>';
+    $('info').innerHTML += '<li><p>' + item[i].date + '</p><p>' + item[i].title + '＠' + item[i].area + ' ' + item[i].place + '</p><p>OPEN ' + item[i].open + ' / START ' + item[i].start + '</p><p>出演：' + artistsItemJoin + '</p><p><a href="detail.html?live=' + count + '">詳細</a></p></li>';
 
   }
 
