@@ -16,11 +16,12 @@
 <h1 id="artist"></h1>
 
 <div>SETLIST
-<p><input type="text" id="track0" class="setlist"> <button onclick="trackInputAdd(this);">+</button></p>
+<p><input type="text" id="track0" class="setlist"><button onclick="trackInputAdd(this);">+</button></p>
 </div>
 
 <button onclick="liveDataSave();">登録</button>
-<button onclick="location.href='index.html';" id="cancel">キャンセル</button>
+<button onclick="clickCancel();" id="cancel">キャンセル</button>
+<p><button onclick="setlistDelete();">セットリストを削除</button></p>
 
 </div>
 
@@ -84,15 +85,20 @@ if(urlParam) {
       for(var i=1; i<dataSetlistNum; i++) {
         var currentTrackInput = document.getElementsByClassName('setlist')[i-1];
         var trackAddButton = currentTrackInput.nextElementSibling;
-        //次の番号のアーティスト欄と「+」ボタンを生成し、一つ前のアーティストの下段に挿入
+        var trackAddButton2 = currentTrackInput.nextElementSibling.nextElementSibling;
+        //次の番号のセットリスト欄と「+」「-」ボタンを生成し、一つ前のセットリストの下段に挿入
         var nextTrackForm = document.createElement('p');
-        nextTrackForm.innerHTML = '<input type="text" id="track' + i + '" class="setlist"> <button onclick="trackInputAdd(this);">+</button>';
-        currentTrackInput.parentNode.appendChild(nextTrackForm);
-        //一つ前のアーティスト横の「+」ボタンを削除
+        nextTrackForm.innerHTML = '<input type="text" id="track' + i + '" class="setlist"><button onclick="trackInputAdd(this);">+</button><button onclick="trackInputDelete(this);">-</button>';
+        currentTrackInput.parentNode.parentNode.appendChild(nextTrackForm);
+        //一つ前のセットリスト横の「+」ボタンを削除
         currentTrackInput.parentNode.removeChild(trackAddButton);
+        //一つ前のセットリスト横の「-」ボタンを削除
+        if(trackAddButton2){
+          currentTrackInput.parentNode.removeChild(trackAddButton2);
+        }
         nextTrackId = 'track' + i;
         nextTrackInput = document.getElementsByClassName('setlist')[i];
-        //追加したアーティスト欄に既存の値を入力
+        //追加したセットリスト欄に既存の値を入力
         nextTrackInput.value = item.artists[artistID].setlist[nextTrackId];
       }
     }
@@ -111,12 +117,39 @@ if(urlParam) {
 function trackInputAdd(obj) {
   var currentInputId = obj.previousElementSibling.getAttribute('id');
   var currentTrackNum = Number(currentInputId.replace('track', ''));
-  //次の番号の入力欄と「+」ボタンを生成し、下の段に挿入
+  //次の番号の入力欄と「+」「-」ボタンを生成し、下の段に挿入
   var nextTrackInput = document.createElement('p');
-  nextTrackInput.innerHTML = '<input type="text" id="track' + (currentTrackNum + 1) + '" class="setlist"> <button onclick="trackInputAdd(this);">+</button>';
+  nextTrackInput.innerHTML = '<input type="text" id="track' + (currentTrackNum + 1) + '" class="setlist"><button onclick="trackInputAdd(this);">+</button><button onclick="trackInputDelete(this);">-</button>';
   obj.parentNode.parentNode.appendChild(nextTrackInput);
+  //2回目以降については「+」ボタンの右横の「-」ボタンも削除する
+  var currentInputDelete = obj.nextElementSibling;
+  if (currentInputDelete){
+    obj.parentNode.removeChild(currentInputDelete);
+  }
   //クリックされた「+」ボタン自体は削除する
   obj.parentNode.removeChild(obj);
+}
+
+//☆「-」ボタンが押された時の処理
+function trackInputDelete(obj) {
+  var currentInputId = obj.previousElementSibling.previousElementSibling.getAttribute('id');
+  var currentTrackNum = Number(currentInputId.replace('track', ''));
+  //1個前のセットリスト入力欄の隣に「+」ボタンを追加
+  var previousTrackInput = obj.parentNode.previousElementSibling;
+  var previousTrackButton1 = document.createElement('button');
+  previousTrackButton1.setAttribute('onclick', 'trackInputAdd(this);');
+  previousTrackButton1.innerText = '+';
+  previousTrackInput.appendChild(previousTrackButton1);
+  //1個前のセットリスト入力欄の隣に「-」ボタンを追加（最初の入力欄の時は追加しない）
+  if (currentTrackNum > 1) {
+    var previousTrackButton2 = document.createElement('button');
+    previousTrackButton2.setAttribute('onclick', 'trackInputDelete(this);');
+    previousTrackButton2.innerText = '-';
+    previousTrackInput.appendChild(previousTrackButton2);
+  }
+  //該当のセットリスト入力欄を削除
+  var currentTrackInput = obj.parentNode;
+  obj.parentNode.parentNode.removeChild(currentTrackInput);
 }
 
 //☆「登録」ボタンが押された時の処理
@@ -134,11 +167,25 @@ function liveDataSave() {
   var allTrackNum = document.getElementsByClassName('setlist').length;
   var trackList = document.getElementsByClassName('setlist');
 
+  //localStorageに保存されているセットリスト一覧を配列として取得
+  var dataTrackNum = Object.keys(item.artists[artistID].setlist).length;
+  var dataTrackList = Object.keys(item.artists[artistID].setlist);
+
+  //複数のセットリスト欄が表示されている場合、track1以降の値をオブジェクトに代入
   if (allTrackNum > 1) {
-    //複数のセットリスト欄が表示されている場合、track1以降の値をオブジェクトに代入
     for(var i=1; i<allTrackNum; i++) {
       targetTrackId = trackList[i].id;
       item.artists[artistID].setlist[targetTrackId] = $(targetTrackId).value;
+    }
+  }
+
+  //セットリスト欄が削除されていたら、削除分のセットリストを登録用オブジェクトから削除
+  if (allTrackNum < dataTrackNum) {
+    diffTrackNum = dataTrackNum - allTrackNum;
+    deleteTrackList = dataTrackList.splice(allTrackNum, diffTrackNum);
+    for (var j in deleteTrackList) {
+      var deleteTrackId = deleteTrackList[j];
+      delete item.artists[artistID].setlist[deleteTrackId];
     }
   }
 
@@ -148,8 +195,33 @@ function liveDataSave() {
     JSON.stringify(item)
   );
   //登録後、一覧画面へ遷移
-  location.href = 'index.html';
+  location.href = 'detail.html?live=' + count;
 
+}
+
+//☆「キャンセル」ボタンが押された時の処理
+function clickCancel() {
+  location.href = 'detail.html?live=' + count;
+}
+
+//☆「このセットリストを削除」ボタンが押された時の処理
+function setlistDelete() {
+  //確認ダイアログで「OK」を押したら処理を実行
+  if(window.confirm('セットリストを削除してよろしいですか？')){
+    //live=xxというパラメータを元にlocalStorageから該当データを読み込み
+    item = JSON.parse(
+      localStorage.getItem('live' + count)
+    );
+    //該当のアーティストのセットリストを初期化
+    item.artists[artistID].setlist = {};
+    //登録用オブジェクトの内容をcount番号のlocalStorageへ上書き保存
+    localStorage.setItem(
+      'live' + count,
+      JSON.stringify(item)
+    );
+    //削除実行後、一覧画面へ遷移
+    location.href = 'detail.html?live=' + count;
+  }
 }
 
 </script>
