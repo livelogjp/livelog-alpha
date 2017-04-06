@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ライブをメモするLivelog</title>
+</head>
+<body>
+
+<p><a href="index.html" id="back">＜</a></p>
+
+<hr>
+
+<div id="form">
+
+<h1 id="artist"></h1>
+
+<div>MEMBER
+<p><input type="text" id="part0" class="part" placeholder="PART"><input type="text" id="member0" class="member" placeholder="MEMBER"><button onclick="memberInputAdd(this);">+</button></p>
+</div>
+
+<button onclick="liveDataSave();">登録</button>
+<button onclick="clickCancel();" id="cancel">キャンセル</button>
+<p><button onclick="memberDelete();">メンバーを削除</button></p>
+
+</div>
+
+<hr>
+
+<p>Developed on <a href="https://github.com/livelogjp/livelog-alpha">GitHub</a>.</p>
+
+<script>
+
+function $(id){return document.getElementById(id);}
+
+//☆エラーの時にフォームを消してエラー文言を表示する関数
+function displayError() {
+  var errorMessage = document.createElement('p');
+  errorMessage.innerText = 'データが正常に読み込まれませんでした。';
+  var errorLink = document.createElement('p');
+  errorLink.innerHTML = '<a href="index.html">ライブ一覧へ戻る</a>';
+  $('form').innerHTML = '';
+  $('form').appendChild(errorMessage);
+  $('form').appendChild(errorLink);
+}
+
+//☆既存のデータを読み込んでフォーム要素を表示する処理
+
+// URLのパラメータから「?」を除いた文字列を取得
+var urlParam = location.search.substring(1);
+
+// URLにパラメータが存在する場合
+if(urlParam) {
+  // パラメータの「?」以降の文字列を「&」で分割して配列paramに代入
+  var param = urlParam.split('&');
+
+  var paramArray = [];
+
+  //パラメータのaaa=bbbという部分をペアで取り出して連想配列paramArrayに代入
+  for (i = 0; i < param.length; i++) {
+    var paramItem = param[i].split('=');
+    paramArray[paramItem[0]] = paramItem[1];
+  }
+
+  if(paramArray.live && paramArray.artist) {
+    // live=xxというパラメータが存在したら、count番号にその値を代入
+    var count = paramArray.live;
+    var count2 = paramArray.artist;
+    //戻るリンクとキャンセルボタンの遷移先を該当のライブ詳細画面へ変更
+    $('back').setAttribute('href', 'detail.html?live=' + count);
+    $('cancel').setAttribute('onclick', 'location.href="detail.html?live=' + count + '";');
+    // その番号のデータを取り出してitemオブジェクトへ一次保存
+    item = JSON.parse(
+      localStorage.getItem('live' + count)
+    );
+
+    var artistID = 'artist' + count2;
+    $('artist').innerText = item.artists[artistID].name;
+    var dataMemberNum = Object.keys(item.artists[artistID].members).length;
+    //メンバーが1つ以上登録されていたら、1つ目の入力欄に値を挿入
+    if (dataMemberNum > 0) {
+      $('part0').value = item.artists[artistID].members.member0.part;
+      $('member0').value = item.artists[artistID].members.member0.name;
+    }
+    if(dataMemberNum > 1) {
+      for(var i=1; i<dataMemberNum; i++) {
+        var currentMemberInput = document.getElementsByClassName('member')[i-1];
+        var memberAddButton = currentMemberInput.nextElementSibling;
+        var memberAddButton2 = currentMemberInput.nextElementSibling.nextElementSibling;
+        //次の番号のメンバー欄と「+」「-」ボタンを生成し、一つ前のメンバーの下段に挿入
+        var nextMemberForm = document.createElement('p');
+        nextMemberForm.innerHTML = '<input type="text" id="part' + i + '" class="part" placeholder="PART"><input type="text" id="member' + i + '" class="member" placeholder="MEMBER"><button onclick="memberInputAdd(this);">+</button><button onclick="memberInputDelete(this);">-</button>';
+        currentMemberInput.parentNode.parentNode.appendChild(nextMemberForm);
+        //一つ前のメンバー横の「+」ボタンを削除
+        currentMemberInput.parentNode.removeChild(memberAddButton);
+        //一つ前のメンバー横の「-」ボタンを削除
+        if(memberAddButton2){
+          currentMemberInput.parentNode.removeChild(memberAddButton2);
+        }
+        var nextMemberId = 'member' + i;
+        var nextPartId = 'part' + i;
+        var nextMemberInput = document.getElementsByClassName('member')[i];
+        var nextPartInput = document.getElementsByClassName('part')[i];
+        //追加したメンバー欄に既存の値を入力
+        nextPartInput.value = item.artists[artistID].members[nextMemberId].part;
+        nextMemberInput.value = item.artists[artistID].members[nextMemberId].name;
+      }
+    }
+
+  } else {
+    //live=xx,artist=yyのどちらかのパラメータがなかったらエラー表示
+    displayError();
+  }
+
+} else {
+  //URLにパラメータそのものがなかったらエラー表示
+  displayError();
+}
+
+//☆メンバーの「+」ボタンが押された時の処理
+function memberInputAdd(obj) {
+  var currentInputId = obj.previousElementSibling.getAttribute('id');
+  var currentMemberNum = Number(currentInputId.replace('member', ''));
+  //次の番号の入力欄と「+」ボタンを生成し、下の段に挿入
+  var nextMemberInput = document.createElement('p');
+  nextMemberInput.innerHTML = '<input type="text" id="part' + (currentMemberNum + 1) + '" class="part" placeholder="PART"><input type="text" id="member' + (currentMemberNum + 1) + '" class="member" placeholder="MEMBER"><button onclick="memberInputAdd(this);">+</button><button onclick="memberInputDelete(this);">-</button>';
+  obj.parentNode.parentNode.appendChild(nextMemberInput);
+  //2回目以降については「+」ボタンの右横の「-」ボタンも削除する
+  var currentInputDelete = obj.nextElementSibling;
+  if (currentInputDelete){
+    obj.parentNode.removeChild(currentInputDelete);
+  }
+  //クリックされた「+」ボタン自体は削除する
+  obj.parentNode.removeChild(obj);
+}
+
+//☆「-」ボタンが押された時の処理
+function memberInputDelete(obj) {
+  var currentInputId = obj.previousElementSibling.previousElementSibling.getAttribute('id');
+  var currentMemberNum = Number(currentInputId.replace('member', ''));
+  //1個前のメンバー入力欄の隣に「+」ボタンを追加
+  var previousMemberInput = obj.parentNode.previousElementSibling;
+  var previousMemberButton1 = document.createElement('button');
+  previousMemberButton1.setAttribute('onclick', 'memberInputAdd(this);');
+  previousMemberButton1.innerText = '+';
+  previousMemberInput.appendChild(previousMemberButton1);
+  //1個前のセットリスト入力欄の隣に「-」ボタンを追加（最初の入力欄の時は追加しない）
+  if (currentMemberNum > 1) {
+    var previousMemberButton2 = document.createElement('button');
+    previousMemberButton2.setAttribute('onclick', 'memberInputDelete(this);');
+    previousMemberButton2.innerText = '-';
+    previousMemberInput.appendChild(previousMemberButton2);
+  }
+  //該当のメンバー入力欄を削除
+  var currentMemberInput = obj.parentNode;
+  obj.parentNode.parentNode.removeChild(currentMemberInput);
+}
+
+//☆「登録」ボタンが押された時の処理
+function liveDataSave() {
+
+  //live=xxというパラメータを元にlocalStorageから該当データを読み込み
+  item = JSON.parse(
+    localStorage.getItem('live' + count)
+  );
+
+  //フォームのメンバー欄を配列として取得
+  var allMemberNum = document.getElementsByClassName('member').length;
+  var memberList = document.getElementsByClassName('member');
+
+  //localStorageに保存されているメンバー一覧を配列として取得
+  var dataMemberNum = Object.keys(item.artists[artistID].members).length;
+  var dataMemberList = Object.keys(item.artists[artistID].members);
+
+  if (!item.artists[artistID].members.member0) {
+    item.artists[artistID].members.member0 = {};
+  }
+
+  //一人目のメンバーをフォームの値から代入
+  item.artists[artistID].members.member0.part = $('part0').value;
+  item.artists[artistID].members.member0.name = $('member0').value;
+
+  //複数のメンバー欄が表示されている場合、member1以降の値をオブジェクトに代入
+  if (allMemberNum > 1) {
+    for(var i=1; i<allMemberNum; i++) {
+      var targetMemberId = memberList[i].id;
+      var targetPartId =  memberList[i].id.replace('member', 'part');
+      if (!item.artists[artistID].members[targetMemberId]) {
+        item.artists[artistID].members[targetMemberId] = {};
+      }
+      item.artists[artistID].members[targetMemberId].part = $(targetPartId).value;
+      item.artists[artistID].members[targetMemberId].name = $(targetMemberId).value;
+    }
+  }
+
+  //メンバー欄が削除されていたら、削除分のメンバーを登録用オブジェクトから削除
+  if (allMemberNum < dataMemberNum) {
+    var diffMemberNum = dataMemberNum - allMemberNum;
+    var deleteMemberList = dataMemberList.splice(allMemberNum, diffMemberNum);
+    for (var j in deleteMemberList) {
+      var deleteMemberId = deleteMemberList[j];
+      delete item.artists[artistID].members[deleteMemberId];
+    }
+  }
+
+  //登録用オブジェクトの内容をcount番号のlocalStorageへ上書き保存
+  localStorage.setItem(
+    'live' + count,
+    JSON.stringify(item)
+  );
+  //登録後、一覧画面へ遷移
+  location.href = 'detail.html?live=' + count;
+
+}
+
+//☆「キャンセル」ボタンが押された時の処理
+function clickCancel() {
+  location.href = 'detail.html?live=' + count;
+}
+
+//☆「メンバーを削除」ボタンが押された時の処理
+function memberDelete() {
+  //確認ダイアログで「OK」を押したら処理を実行
+  if(window.confirm('メンバーを削除してよろしいですか？')){
+    //live=xxというパラメータを元にlocalStorageから該当データを読み込み
+    item = JSON.parse(
+      localStorage.getItem('live' + count)
+    );
+    //該当のアーティストのセットリストを初期化
+    item.artists[artistID].members = {};
+    //登録用オブジェクトの内容をcount番号のlocalStorageへ上書き保存
+    localStorage.setItem(
+      'live' + count,
+      JSON.stringify(item)
+    );
+    //削除実行後、一覧画面へ遷移
+    location.href = 'detail.html?live=' + count;
+  }
+}
+
+</script>
+
+</body>
+</html>

@@ -85,7 +85,7 @@ if(urlParam) {
     //戻るリンクとキャンセルボタンの遷移先を該当のライブ詳細画面へ変更
     $('back').setAttribute('href', 'detail.html?live=' + count);
     $('cancel').setAttribute('onclick', 'location.href="detail.html?live=' + count + '";');
-    $('delete').innerHTML = '<button onclick="liveDataDelete();">このライブ情報を削除</button>';
+    $('delete').innerHTML = '<button onclick="liveDataDelete();">ライブ情報を削除</button>';
     // その番号のデータを取り出してitemオブジェクトへ一次保存
     item = JSON.parse(
       localStorage.getItem('live' + count)
@@ -105,12 +105,13 @@ if(urlParam) {
         var currentArtistInput = document.getElementsByClassName('artist')[i-1];
         var artistAddButton = currentArtistInput.nextElementSibling;
         var artistAddButton2 = currentArtistInput.nextElementSibling.nextElementSibling;
-        //次の番号のアーティスト欄と「+」ボタンを生成し、一つ前のアーティストの下段に挿入
+        //次の番号のアーティスト欄と「+」「-」ボタンを生成し、一つ前のアーティストの下段に挿入
         var nextArtistForm = document.createElement('p');
         nextArtistForm.innerHTML = '<input type="text" id="artist' + i + '" class="artist"><button onclick="artistInputAdd(this);">+</button><button onclick="artistInputDelete(this);">-</button>';
         currentArtistInput.parentNode.parentNode.appendChild(nextArtistForm);
         //一つ前のアーティスト横の「+」ボタンを削除
         currentArtistInput.parentNode.removeChild(artistAddButton);
+        //一つ前のアーティスト横の「-」ボタンを削除
         if(artistAddButton2){
           currentArtistInput.parentNode.removeChild(artistAddButton2);
         }
@@ -206,7 +207,7 @@ function liveDataSave() {
 
   //localStorageに保存されているアーティスト一覧を配列として取得
   var dataArtistNum = Object.keys(item.artists).length;
-  var dataArtisList = Object.keys(item.artists);
+  var dataArtistList = Object.keys(item.artists);
 
   //複数のアーティスト欄が表示されている場合、artist1以降の値をオブジェクトに代入
   if (allArtistNum > 1) {
@@ -231,12 +232,11 @@ function liveDataSave() {
   //アーティスト欄が削除されていたら、削除分のアーティストを登録用オブジェクトから削除
   if (allArtistNum < dataArtistNum) {
     diffArtistNum = dataArtistNum - allArtistNum;
-    deleteArtisList = dataArtisList.splice(allArtistNum, diffArtistNum);
-    for (var j in deleteArtisList) {
-      var deleteArtistId = deleteArtisList[j];
+    deleteArtistList = dataArtistList.splice(allArtistNum, diffArtistNum);
+    for (var j in deleteArtistList) {
+      var deleteArtistId = deleteArtistList[j];
       delete item.artists[deleteArtistId];
     }
-
   }
 
   //登録用オブジェクトの内容をcount番号のlocalStorageへ上書き保存
@@ -249,10 +249,10 @@ function liveDataSave() {
 
 }
 
-//☆「このライブ情報を削除」ボタンが押された時の処理
+//☆「ライブ情報を削除」ボタンが押された時の処理
 function liveDataDelete() {
   //確認ダイアログで「OK」を押したら処理を実行
-  if(window.confirm('このライブ情報を削除してよろしいですか？')){
+  if(window.confirm('ライブ情報を削除してよろしいですか？')){
     //該当のライブ情報をlocalStorageから削除
     localStorage.removeItem('live' + count);
     //削除実行後、一覧画面へ遷移

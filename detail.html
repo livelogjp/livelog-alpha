@@ -68,17 +68,20 @@ if(urlParam) {
     $('area').innerHTML = item.area;
     $('place').innerHTML = item.place;
     var dataArtistsNum = Object.keys(item.artists).length;
-
     //アーティストが1人以上登録されていたら、1人目のアーティスト名を表示
     if(dataArtistsNum > 0) {
-      $('artist0').innerHTML = '<p>' + item.artists.artist0.name + '（<a href="setlist.html?live=' + count + '&artist=0">編集</a>）</p>';
+      //1人目のアーティスト名を表示
+      $('artist0').innerHTML = '<p>' + item.artists.artist0.name + '</p>';
+      //1人目のセットリストの内容をオブジェクトとして取得
       var firstSetlistNum = Object.keys(item.artists.artist0.setlist).length;
       var firstSetlistItem = Object.values(item.artists.artist0.setlist);
+      //1人目のアーティスト名の下にセットリスト欄を追加
+      var firstArtistList = document.getElementById('artist0');
+      var firstSetlistArea = document.createElement('div');
+      firstSetlistArea.innerHTML = '<p>SETLIST（<a href="setlist.html?live=' + count + '&artist=0">編集</a>）</p>';
+      firstArtistList.appendChild(firstSetlistArea);
+      //セットリストが登録されていたら、セットリストの内容をリスト表示
       if (firstSetlistNum > 0) {
-        var firstArtistList = document.getElementById('artist0');
-        var firstSetlistArea = document.createElement('p');
-        firstSetlistArea.innerText = 'セットリスト';
-        firstArtistList.appendChild(firstSetlistArea);
         var firstSetlist = document.createElement('ul');
         firstSetlistArea.appendChild(firstSetlist);
         for (track in firstSetlistItem) {
@@ -87,6 +90,26 @@ if(urlParam) {
           firstSetlist.appendChild(additionalTrack);
         }
       }
+
+      //1人目のメンバーの内容をオブジェクトとして取得
+      var firstMemberNum = Object.keys(item.artists.artist0.members).length;
+      var firstMemberItem = Object.keys(item.artists.artist0.members);
+      //1人目のアーティスト名の下にメンバー欄を追加
+      var firstMemberArea = document.createElement('div');
+      firstMemberArea.innerHTML = '<p>MEMBER（<a href="member.html?live=' + count + '&artist=0">編集</a>）</p>';
+      firstArtistList.appendChild(firstMemberArea);
+      //メンバーが登録されていたら、セットリストの内容をリスト表示
+      if (firstMemberNum > 0) {
+        var firstMemberList = document.createElement('ul');
+        firstMemberArea.appendChild(firstMemberList);
+        for (member in firstMemberItem) {
+          var additionalMember = document.createElement('li');
+          var additionalMemberId = firstMemberItem[member];
+          additionalMember.innerText = item.artists.artist0.members[additionalMemberId].part + '：' + item.artists.artist0.members[additionalMemberId].name;
+          firstMemberList.appendChild(additionalMember);
+        }
+      }
+
     }
     //複数アーティストが登録されていたら、artist1以降の分だけリスト要素を増やして内容を表示
     if(dataArtistsNum > 1) {
@@ -94,17 +117,20 @@ if(urlParam) {
         var nextArtistId = 'artist' + i;
         var currentArtistId = 'artist' + (i - 1);
         var currentArtistList = document.getElementById(currentArtistId);
+        //現在のアーティストの下に次のアーティストを追加
         var nextArtistList = document.createElement('li');
         nextArtistList.setAttribute('id', nextArtistId);
-        nextArtistList.innerHTML = '<p>' + item.artists[nextArtistId].name + '（<a href="setlist.html?live=' + count + '&artist=' + i + '">編集</a>）</p>';
+        nextArtistList.innerHTML = '<p>' + item.artists[nextArtistId].name + '</p>';
         currentArtistList.parentNode.appendChild(nextArtistList);
-
+        //次のアーティストのセットリストの内容をオブジェクトとして取得
         var nextSetlistNum = Object.keys(item.artists[nextArtistId].setlist).length;
         var nextSetlistItem = Object.values(item.artists[nextArtistId].setlist);
+        //次のアーティスト名の下にセットリスト欄を追加
+        var nextSetlistArea = document.createElement('div');
+        nextSetlistArea.innerHTML = '<p>SETLIST（<a href="setlist.html?live=' + count + '&artist=' + i + '">編集</a>）</p>';
+        nextArtistList.appendChild(nextSetlistArea);
+        //セットリストが登録されていたら、セットリストの内容をリスト表示
         if (nextSetlistNum > 0) {
-          var nextSetlistArea = document.createElement('p');
-          nextSetlistArea.innerText = 'セットリスト';
-          nextArtistList.appendChild(nextSetlistArea);
           var nextSetlist = document.createElement('ul');
           nextSetlistArea.appendChild(nextSetlist);
           for (track in nextSetlistItem) {
@@ -113,6 +139,27 @@ if(urlParam) {
             nextSetlist.appendChild(additionalTrack);
           }
         }
+
+        //次のアーティストのメンバーの内容をオブジェクトとして取得
+        var nextMemberNum = Object.keys(item.artists[nextArtistId].members).length;
+        var nextMemberItem = Object.keys(item.artists[nextArtistId].members);
+        //次のアーティスト名の下にメンバー欄を追加
+        var nextMemberArea = document.createElement('div');
+        nextMemberArea.innerHTML = '<p>MEMBER（<a href="member.html?live=' + count + '&artist=' + i + '">編集</a>）</p>';
+        nextArtistList.appendChild(nextMemberArea);
+        //メンバーが登録されていたら、メンバーの内容をリスト表示
+        if (nextMemberNum > 0) {
+          var nextMemberList = document.createElement('ul');
+          nextMemberArea.appendChild(nextMemberList);
+          for (member in nextMemberItem) {
+            var additionalMember = document.createElement('li');
+            var additionalMemberId = nextMemberItem[member];
+            additionalMember.innerText = item.artists.artist0.members[additionalMemberId].part + '：' + item.artists.artist0.members[additionalMemberId].name;
+            nextMemberList.appendChild(additionalMember);
+          }
+        }
+
+
 
       }
     }
