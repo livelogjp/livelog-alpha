@@ -11,6 +11,8 @@
 
 <hr>
 
+<form name="form" onsubmit="return false;">
+
 <p>TITLE<br>
 <input type="text" id="title"></p>
 
@@ -19,16 +21,70 @@
 
 <p>OPEN <input type="text" id="open"> START <input type="text" id="start"></p>
 
+<p>ADV <input type="text" id="adv"> DOOR <input type="text" id="door"></p>
+
 <p>AREA <input type="text" id="area"> PLACE <input type="text" id="place"></p>
+
+<p>ADDRESS<br>
+<input type="text" id="address"></p>
+
+<p>INFO(URL)<br>
+<input type="text" id="info"></p>
 
 <div>ARTIST
 <p><input type="text" id="artist0" class="artist"><button onclick="artistInputAdd(this);">+</button></p>
 </div>
 
+<p>TYPE<br>
+<input type="radio" name="type" value="イベントライブ" id="type0">
+<label for="type0">イベントライブ</label>
+<input type="radio" name="type" value="ワンマンライブ" id="type1">
+<label for="type1">ワンマンライブ</label>
+<input type="radio" name="type" value="フェス" id="type2">
+<label for="type2">フェス</label>
+<input type="radio" name="type" value="ツアー" id="type3">
+<label for="type3">ツアー</label>
+<input type="radio" name="type" value="その他" id="type4">
+<label for="type4">その他</label>
+</p>
+
+<p>GENRE<br>
+<input type="radio" name="genre" value="弾き語り" id="genre0">
+<label for="genre0">弾き語り</label>
+<input type="radio" name="genre" value="アコースティック" id="genre1">
+<label for="genre1">アコースティック</label>
+<input type="radio" name="genre" value="バンド" id="genre2">
+<label for="genre2">バンド</label>
+<input type="radio" name="genre" value="その他" id="genre3">
+<label for="genre3">その他</label>
+</p>
+
+<p>TICKET<br>
+<input type="radio" name="ticket" value="未入手" id="ticket0">
+<label for="ticket0">未入手</label>
+<input type="radio" name="ticket" value="予約済" id="ticket1">
+<label for="ticket1">予約済</label>
+<input type="radio" name="ticket" value="注文済" id="ticket2">
+<label for="ticket2">注文済</label>
+<input type="radio" name="ticket" value="入手済" id="ticket3">
+<label for="ticket3">入手済</label>
+</p>
+
+<p>ATTENDANCE<br>
+<input type="checkbox" name="attendance" value="参加済" id="attendance"><label for="attendance">参加済</label></p>
+
+<p>MEMO<br>
+<input type="text" id="memo"></p>
+
+<p>REPORT(URL)<br>
+<input type="text" id="report"></p>
+
 <button onclick="liveDataSave();">登録</button>
 <button onclick="location.href='index.html';" id="cancel">キャンセル</button>
 
 <p id="delete"></p>
+
+</form>
 
 <hr>
 
@@ -46,7 +102,7 @@ if(localStorage.length > 0) {
   var key = new Array();
   //配列keyにライブ番号の一覧を格納
   for(var i=0; i<localStorage.length; i++) {
-    currentLiveId = localStorage.key(i);
+    var currentLiveId = localStorage.key(i);
     key[i] = Number(currentLiveId.replace('live', ''));
   }
   //保存されているlivexxの番号のうち最大の整数を取得
@@ -95,8 +151,12 @@ if(urlParam) {
     $('date').value = item.date;
     $('open').value = item.open;
     $('start').value = item.start;
+    $('adv').value = item.adv;
+    $('door').value = item.door;
     $('area').value = item.area;
     $('place').value = item.place;
+    $('address').value = item.address;
+    $('info').value = item.info;
     $('artist0').value = item.artists.artist0.name;
     //複数アーティストが登録されていたら、artist1以降の分だけフォームを増やして値を入力
     var dataArtistsNum = Object.keys(item.artists).length;
@@ -115,12 +175,43 @@ if(urlParam) {
         if(artistAddButton2){
           currentArtistInput.parentNode.removeChild(artistAddButton2);
         }
-        nextArtistId = 'artist' + i;
-        nextArtistInput = document.getElementsByClassName('artist')[i];
+        var nextArtistId = 'artist' + i;
+        var nextArtistInput = document.getElementsByClassName('artist')[i];
         //追加したアーティスト欄に既存の値を入力
         nextArtistInput.value = item.artists[nextArtistId].name;
       }
     }
+
+    //typeラジオボタンのvalueとitemオブジェクト内の値が一致したらチェックを入れる
+    for(var i=0; i<document.form.type.length;i++){
+        if(document.form.type[i].value == item.type){
+            document.form.type[i].checked = true;
+        }
+    }
+
+    //genreラジオボタンのvalueとitemオブジェクト内の値が一致したらチェックを入れる
+    for(var i=0; i<document.form.genre.length;i++){
+        if(document.form.genre[i].value == item.genre){
+            document.form.genre[i].checked = true;
+        }
+    }
+
+    //ticketラジオボタンのvalueとitemオブジェクト内の値が一致したらチェックを入れる
+    for(var i=0; i<document.form.ticket.length;i++){
+        if(document.form.ticket[i].value == item.ticket){
+            document.form.ticket[i].checked = true;
+        }
+    }
+
+    //attendanceチェックボックスのvalueとitemオブジェクト内の値が一致したらチェックを入れる
+    if($('attendance').value == item.attendance){
+      $('attendance').checked = true;
+    }
+
+    // itemオブジェクトの内容を取り出して各フォームに入力状態にする
+    $('memo').value = item.memo;
+    $('report').value = item.report;
+
   }
 
 }
@@ -182,8 +273,12 @@ function liveDataSave() {
   item.date = $('date').value;
   item.open = $('open').value;
   item.start = $('start').value;
+  item.adv = $('adv').value;
+  item.door = $('door').value;
   item.area = $('area').value;
   item.place = $('place').value;
+  item.address = $('address').value;
+  item.info = $('info').value;
 
   if(!(urlParam && paramArray.live)) {
     //URLにパラメータがない場合は、artists欄を多次元配列として初期化
@@ -212,7 +307,7 @@ function liveDataSave() {
   //複数のアーティスト欄が表示されている場合、artist1以降の値をオブジェクトに代入
   if (allArtistNum > 1) {
     for(var i=1; i<allArtistNum; i++) {
-      targetArtistId = artistList[i].id;
+      var targetArtistId = artistList[i].id;
       //アーティストが未登録の場合artistオブジェクトを初期化
       if (!item.artists[targetArtistId]) {
         item.artists[targetArtistId] = {};
@@ -231,13 +326,67 @@ function liveDataSave() {
 
   //アーティスト欄が削除されていたら、削除分のアーティストを登録用オブジェクトから削除
   if (allArtistNum < dataArtistNum) {
-    diffArtistNum = dataArtistNum - allArtistNum;
-    deleteArtistList = dataArtistList.splice(allArtistNum, diffArtistNum);
+    var diffArtistNum = dataArtistNum - allArtistNum;
+    var deleteArtistList = dataArtistList.splice(allArtistNum, diffArtistNum);
     for (var j in deleteArtistList) {
       var deleteArtistId = deleteArtistList[j];
       delete item.artists[deleteArtistId];
     }
   }
+
+  //type用のフラグを設定
+  var typeFlag = false;
+  //typeラジオボタンを１つずつ調べてチェックされていたらvalueの値を代入する
+  for(var i=0; i<document.form.type.length;i++){
+      if(document.form.type[i].checked){
+          typeFlag = true;
+          item.type = document.form.type[i].value;
+      }
+  }
+  //typeラジオボタンがチェックされていなかったら空文字を代入する
+  if(!typeFlag){
+    item.type = '';
+  }
+
+  //genre用のフラグを設定
+  var genreFlag = false;
+  //genreラジオボタンを１つずつ調べてチェックされていたらvalueの値を代入する
+  for(var i=0; i<document.form.genre.length;i++){
+      if(document.form.genre[i].checked){
+          genreFlag = true;
+          item.genre = document.form.genre[i].value;
+      }
+  }
+  //genreラジオボタンがチェックされていなかったら空文字を代入する
+  if(!genreFlag){
+    item.genre = '';
+  }
+
+  //ticket用のフラグを設定
+  var ticketFlag = false;
+  //ticketラジオボタンを１つずつ調べてチェックされていたらvalueの値を代入する
+  for(var i=0; i<document.form.ticket.length;i++){
+      if(document.form.ticket[i].checked){
+          ticketFlag = true;
+          item.ticket = document.form.ticket[i].value;
+      }
+  }
+  //ticketラジオボタンがチェックされていなかったら空文字を代入する
+  if(!ticketFlag){
+    item.ticket = '';
+  }
+
+  if($('attendance').checked){
+    //attendanceチェックボックスがチェックされていたらvalueの値を代入する
+    item.attendance = $('attendance').value;
+  } else {
+    //attendanceチェックボックスがチェックされていなかったら空文字を代入する
+    item.attendance = '';
+  }
+
+  //登録用のオブジェクトに各フォームの値を代入
+  item.memo = $('memo').value;
+  item.report = $('report').value;
 
   //登録用オブジェクトの内容をcount番号のlocalStorageへ上書き保存
   localStorage.setItem(
