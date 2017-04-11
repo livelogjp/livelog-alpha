@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ライブをメモするLivelog</title>
+</head>
+<body>
+
+<p><a href="index.html">＜</a></p>
+
+<hr>
+
+<h1>IMPORT</h1>
+
+<p>ローカルに保存されたJSONファイルを選択してください。</p>
+
+<form name="form">
+<input type="file" id="selfile"><br>
+<textarea name="txt" rows="10" cols="50" readonly></textarea>
+</form>
+
+<div id="result"></div>
+
+<hr>
+
+<p>Developed on <a href="https://github.com/livelogjp/livelog-alpha">GitHub</a>.</p>
+
+<script>
+
+function $(id){return document.getElementById(id);}
+
+var obj1 = document.getElementById("selfile");
+
+//☆読み込み完了した時に結果を表示する関数
+function displayResult() {
+  var resultMessage = document.createElement('p');
+  resultMessage.innerText = 'データが正常に読み込まれました。';
+  var resultLink = document.createElement('p');
+  resultLink.innerHTML = '<a href="index.html">ライブ一覧へ戻る</a>';
+  $('result').innerHTML = '';
+  $('result').appendChild(resultMessage);
+  $('result').appendChild(resultLink);
+}
+
+//☆ダイアログでファイルが選択された時の処理
+obj1.addEventListener("change",function(evt){
+
+  var file = evt.target.files;
+
+  //FileReaderの作成
+  var reader = new FileReader();
+  //テキスト形式で読み込む
+  reader.readAsText(file[0]);
+
+  //読込終了後の処理
+  reader.onload = function(ev){
+    //テキストエリアに表示する
+    document.form.txt.value = reader.result;
+    //読み込んだ結果を変数に代入
+    var loadData = reader.result;
+    //インポートデータをJSONオブジェクトに変換
+    var loadData = JSON.parse(loadData);
+    //オブジェクトに登録されているデータの個数を取得
+    var loadDataNum = Object.keys(loadData).length;
+    //localStorageのkeyを格納するための配列を生成
+    var key = Object.keys(loadData);
+    //localStorageのvalueを格納するための配列を生成
+    var value = Object.values(loadData);
+    //オブジェクトから読み取ったKey-ValueをlocalStorageへ保存
+    for(var i=0; i<loadDataNum; i++) {
+      localStorage.setItem(
+        key[i],
+        JSON.stringify(value[i])
+      );
+    }
+    displayResult();
+
+  }
+
+},false);
+
+
+</script>
+
+</body>
+</html>

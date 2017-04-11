@@ -15,7 +15,9 @@
 </ul>
 
 <button onclick="location.href='edit.html';">新規登録</button>
-<button onclick="allDataClear();">データクリア</button>
+<p id="clear"></p>
+<p id="export"></p>
+<p id="import"><a href="import.html">インポート</a></p>
 
 <hr>
 
@@ -71,6 +73,9 @@ if(localStorage.length > 0) {
     $('info').innerHTML += '<li><p>' + item[i].date + '</p><p>' + item[i].title + '＠' + item[i].area + ' ' + item[i].place + '</p><p>OPEN ' + item[i].open + ' / START ' + item[i].start + '</p><p>出演：' + artistsItemJoin + '</p><p><a href="detail.html?live=' + count + '">詳細</a></p></li>';
 
   }
+
+  $('clear').innerHTML += '<button onclick="allDataClear();">データクリア</button>';
+  $('export').innerHTML += '<a href="export.html">エクスポート</a>';
 
 } else {
   //データが登録されていなかったら文言を表示

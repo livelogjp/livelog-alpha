@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ライブをメモするLivelog</title>
+</head>
+<body>
+
+<p><a href="index.html">＜</a></p>
+
+<hr>
+
+<h1>EXPORT</h1>
+
+<div id="form">
+
+<p>以下のリンクからJSONファイルをダウンロード、またはテキストエリアからコピー＆ペーストして保存してください。</p>
+
+<p><a id="download" target="_blank">ダウンロード</a></p>
+
+<p><textarea id="copyArea" cols="30" rows="10"></textarea></p>
+
+</div>
+
+<hr>
+
+<p>Developed on <a href="https://github.com/livelogjp/livelog-alpha">GitHub</a>.</p>
+
+<script>
+
+function $(id){return document.getElementById(id);}
+
+//☆エラーの時にフォームを消してエラー文言を表示する関数
+function displayError() {
+  var errorMessage = document.createElement('p');
+  errorMessage.innerText = 'データが正常に読み込まれませんでした。';
+  var errorLink = document.createElement('p');
+  errorLink.innerHTML = '<a href="index.html">ライブ一覧へ戻る</a>';
+  $('form').innerHTML = '';
+  $('form').appendChild(errorMessage);
+  $('form').appendChild(errorLink);
+}
+
+//☆localStorageにデータが登録されていたらエクスポート用のリンクを表示する処理
+if(localStorage.length > 0) {
+
+  //localStorageのkeyを格納する配列を生成
+  var key = new Array();
+  //エクスポート用のデータを格納する連想配列を生成
+  var saveData = {};
+
+  //localStorageの全データをsaveDataオブジェクトに格納
+  for(var i=0; i<localStorage.length; i++) {
+
+    key[i] = localStorage.key(i);
+    saveData[key[i]] = JSON.parse(
+      localStorage.getItem(key[i])
+    );
+
+  }
+
+  //saveDataオブジェクトを整形済みのJSON文字列に変換
+  var saveData = JSON.stringify(saveData, null , "\t");
+
+  //テキストエリアにエクスポート用データを挿入
+  $('copyArea').value = saveData;
+
+  //ダウンロード用のBlobオブジェクトを生成
+  var blob = new Blob([saveData], {type: "text/plain;charset=utf-8"});
+
+  window.URL = window.URL || window.webkitURL;
+  //ダウンロード用のリンクに生成されたBlobオブジェクトを指定
+  $('download').setAttribute('href', window.URL.createObjectURL(blob));
+  //ダウンロード用のファイル名を指定
+$('download').setAttribute('download', 'livelog.json');
+
+} else {
+  //localStorageにデータが登録されていなかったらエラー表示
+  displayError();
+}
+
+</script>
+
+</body>
+</html>
