@@ -88,7 +88,7 @@ if(urlParam) {
     $('area').innerHTML = item.area;
     $('place').innerHTML = item.place;
     $('address').innerHTML = item.address;
-    $('info').innerHTML = item.info;
+    $('info').innerHTML = '<a href="' + item.info + '" target="_blank">' + item.info + '</a>';
     var dataArtistsNum = Object.keys(item.artists).length;
     //アーティストが1人以上登録されていたら、1人目のアーティスト名を表示
     if(dataArtistsNum > 0) {
@@ -208,7 +208,7 @@ if(urlParam) {
     $('genre').innerHTML = item.genre;
     $('ticket').innerHTML = item.ticket;
     $('memo').innerHTML = item.memo;
-    $('report').innerHTML = item.report;
+    $('report').innerHTML = '<a href="' + item.report + '" target="_blank">' + item.report + '</a>';
 
   }
 
