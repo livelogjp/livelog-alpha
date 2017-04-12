@@ -17,13 +17,31 @@
 
 <p>OPEN <span id="open"></span> START <span id="start"></span></p>
 
+<p>ADV <span id="adv"></span> DOOR <span id="door"></span></p>
+
 <p>AREA <span id="area"></span> PLACE <span id="place"></span></p>
+
+<p>ADDRESS <span id="address"></span></p>
+
+<p>INFO(URL) <span id="info"></span></p>
 
 <div>ARTIST
 <ul>
   <li id="artist0"></li>
 </ul>
 </div>
+
+<p>TYPE <span id="type"></span></p>
+
+<p>GENRE <span id="genre"></span></p>
+
+<p>TICKET <span id="ticket"></span></p>
+
+<p>ATTENDANCE <span id="attendance"></span></p>
+
+<p>MEMO <span id="memo"></span></p>
+
+<p>REPORT(URL) <span id="report"></span></p>
 
 <hr>
 
@@ -65,8 +83,12 @@ if(urlParam) {
     $('date').innerHTML = item.date;
     $('open').innerHTML = item.open;
     $('start').innerHTML = item.start;
+    $('adv').innerHTML = item.adv;
+    $('door').innerHTML = item.door;
     $('area').innerHTML = item.area;
     $('place').innerHTML = item.place;
+    $('address').innerHTML = item.address;
+    $('info').innerHTML = item.info;
     var dataArtistsNum = Object.keys(item.artists).length;
     //アーティストが1人以上登録されていたら、1人目のアーティスト名を表示
     if(dataArtistsNum > 0) {
@@ -80,6 +102,10 @@ if(urlParam) {
       var firstSetlistArea = document.createElement('div');
       firstSetlistArea.innerHTML = '<p>SETLIST（<a href="setlist.html?live=' + count + '&artist=0">編集</a>）</p>';
       firstArtistList.appendChild(firstSetlistArea);
+      //1人目のセットリストのツイート文言用の変数を生成
+      var firstTwTxt1 = item.title + '＠' + item.area + item.place + '%0d%0a%23' + item.artists.artist0.name + '%20さんのセットリスト' + '%0d%0a%0d%0a';
+      var firstTwTxt2 = '';
+      var firstTwTxt3 = '%0d%0a%23ライブ%20%23' + item.genre;
       //セットリストが登録されていたら、セットリストの内容をリスト表示
       if (firstSetlistNum > 0) {
         var firstSetlist = document.createElement('ul');
@@ -88,7 +114,13 @@ if(urlParam) {
           var additionalTrack = document.createElement('li');
           additionalTrack.innerText = firstSetlistItem[track];
           firstSetlist.appendChild(additionalTrack);
+          //ツイート文言用の変数にもセットリストを追加
+          firstTwTxt2 += firstSetlistItem[track] + '%0d%0a';
         }
+        //1人目のセットリストの下にツイート用のリンクを追加
+        var firstSetlistTweet = document.createElement('p');
+        firstSetlistTweet.innerHTML = '<a href="https://twitter.com/intent/tweet?text=' + firstTwTxt1 + firstTwTxt2 + firstTwTxt3 + '" target="_blank">Tweet</a></p>';
+        firstSetlistArea.appendChild(firstSetlistTweet);
       }
 
       //1人目のメンバーの内容をオブジェクトとして取得
@@ -129,6 +161,10 @@ if(urlParam) {
         var nextSetlistArea = document.createElement('div');
         nextSetlistArea.innerHTML = '<p>SETLIST（<a href="setlist.html?live=' + count + '&artist=' + i + '">編集</a>）</p>';
         nextArtistList.appendChild(nextSetlistArea);
+        //次のアーティストのツイート文言用の変数を生成
+        var nextTwTxt1 = item.title + '＠' + item.area + item.place + '%0d%0a%23' + item.artists[nextArtistId].name + '%20さんのセットリスト' + '%0d%0a%0d%0a';
+        var nextTwTxt2 = '';
+        var nextTwTxt3 = '%0d%0a%23ライブ%20%23' + item.genre;
         //セットリストが登録されていたら、セットリストの内容をリスト表示
         if (nextSetlistNum > 0) {
           var nextSetlist = document.createElement('ul');
@@ -137,7 +173,13 @@ if(urlParam) {
             var additionalTrack = document.createElement('li');
             additionalTrack.innerText = nextSetlistItem[track];
             nextSetlist.appendChild(additionalTrack);
+            //ツイート文言用の変数にもセットリストを追加
+            nextTwTxt2 += nextSetlistItem[track] + '%0d%0a';
           }
+          //次のアーティストのセットリストの下にツイート用のリンクを追加
+          var nextSetlistTweet = document.createElement('p');
+          nextSetlistTweet.innerHTML = '<a href="https://twitter.com/intent/tweet?text=' + nextTwTxt1 + nextTwTxt2 + nextTwTxt3 + '" target="_blank">Tweet</a></p>';
+          nextSetlistArea.appendChild(nextSetlistTweet);
         }
 
         //次のアーティストのメンバーの内容をオブジェクトとして取得
@@ -159,10 +201,15 @@ if(urlParam) {
           }
         }
 
-
-
       }
     }
+
+    $('type').innerHTML = item.type;
+    $('genre').innerHTML = item.genre;
+    $('ticket').innerHTML = item.ticket;
+    $('memo').innerHTML = item.memo;
+    $('report').innerHTML = item.report;
+
   }
 
 }
