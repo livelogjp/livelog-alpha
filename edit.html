@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ライブをメモするLivelog</title>
+<style>
+.message {
+  color: #ff0000;
+}
+</style>
 </head>
 <body>
 
@@ -11,15 +16,18 @@
 
 <hr>
 
+<div id="error">
+</div>
+
 <form name="form" onsubmit="return false;">
 
-<p>TITLE<br>
+<p>TITLE*<br>
 <input type="text" id="title"></p>
 
-<p>DATE<br>
-<input type="text" id="date"></p>
+<p>DATE*<br>
+<input type="text" id="date" placeholder="例：2007/09/05"></p>
 
-<p>OPEN <input type="text" id="open"> START <input type="text" id="start"></p>
+<p>OPEN <input type="text" id="open" placeholder="例：18:30"> START <input type="text" id="start" placeholder="例：19:00"></p>
 
 <p>ADV <input type="text" id="adv"> DOOR <input type="text" id="door"></p>
 
@@ -31,7 +39,7 @@
 <p>INFO(URL)<br>
 <input type="text" id="info"></p>
 
-<div>ARTIST
+<div>ARTIST*
 <p><input type="text" id="artist0" class="artist"><button onclick="artistInputAdd(this);">+</button></p>
 </div>
 
@@ -93,6 +101,60 @@
 <script>
 
 function $(id){return document.getElementById(id);}
+
+//日付型チェック関数（YYYY/MM/DD形式）
+function ckDate(datestr) {
+    // 正規表現による書式チェック
+    if(!datestr.match(/^\d{4}\/\d{2}\/\d{2}$/)){
+        return false;
+    }
+    var vYear = datestr.substr(0, 4) - 0;
+    var vMonth = datestr.substr(5, 2) - 1; // Javascriptは、0-11で表現
+    var vDay = datestr.substr(8, 2) - 0;
+    // 月,日の妥当性チェック
+    if(vMonth >= 0 && vMonth <= 11 && vDay >= 1 && vDay <= 31){
+        var vDt = new Date(vYear, vMonth, vDay);
+        if(isNaN(vDt)){
+            return false;
+        }else if(vDt.getFullYear() == vYear && vDt.getMonth() == vMonth && vDt.getDate() == vDay){
+            return true;
+        }else{
+            return false;
+        }
+    }else{
+        return false;
+    }
+}
+
+//時間型チェック関数（HH:MM形式）
+function ckTime(str) {
+    // 正規表現による書式チェック
+    if(!str.match(/^\d{2}\:\d{2}$/)){
+        return false;
+    }
+    var vHour = str.substr(0, 2) - 0;
+    var vMinutes = str.substr(3, 2) - 0;
+    if(vHour >= 0 && vHour <= 24 && vMinutes >= 0 && vMinutes <= 59){
+        return true;
+    }else{
+    }
+}
+
+//URL型チェック関数
+function isUrl(str) {
+  var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+    '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+    '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+    '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+
+  if(!pattern.test(str)) {
+    return false;
+  } else {
+    return true;
+  }
+}
 
 //☆「新規登録」用のデータ番号をセットする処理
 
@@ -258,7 +320,18 @@ function artistInputDelete(obj) {
 //☆「登録」ボタンが押された時の処理
 function liveDataSave() {
 
-  if(urlParam && paramArray.live) {
+  //エラーメッセージの要素とその要素数を取得
+  var messageNum = document.getElementsByClassName('message').length;
+  var messageList = document.getElementsByClassName('message');
+
+  //エラーメッセージが表示されていたら最初に全て消す（登録ボタンを複数回御した時の対策）
+  if (messageNum > 0) {
+    for(var i=0; i<messageNum; i++) {
+      $('error').removeChild(messageList[0]);
+    }
+  }
+
+  if (urlParam && paramArray.live) {
     //URLにlive=xxというパラメータがあったら、localStorageから該当データを読み込み
     item = JSON.parse(
       localStorage.getItem('live' + count)
@@ -269,6 +342,7 @@ function liveDataSave() {
   }
 
   //登録用のオブジェクトに各フォームの値を代入
+  item.id = count;
   item.title = $('title').value;
   item.date = $('date').value;
   item.open = $('open').value;
@@ -388,13 +462,110 @@ function liveDataSave() {
   item.memo = $('memo').value;
   item.report = $('report').value;
 
-  //登録用オブジェクトの内容をcount番号のlocalStorageへ上書き保存
-  localStorage.setItem(
-    'live' + count,
-    JSON.stringify(item)
-  );
-  //登録後、一覧画面へ遷移
-  location.href = 'index.html';
+  //入力エラー用のフラグを設定
+  var errorFlag = false;
+  var errorArea = $('error');
+
+  //TITLE欄が未入力だったら、エラー用フラグを立てて、エラーメッセージを表示
+  if($('title').value == '') {
+    var errorFlag = true;
+    var errorTitle = document.createElement('p');
+    errorTitle.setAttribute('class', 'message');
+    errorTitle.innerText = 'TITLEを入力してください。';
+    errorArea.appendChild(errorTitle);
+  }
+
+  //日付の型チェックをして戻り値を変数に格納
+  var dateFormat = ckDate($('date').value);
+
+  if($('date').value == '') {
+    //DATE欄が未入力だったら、エラー用フラグを立てて、エラーメッセージを表示
+    var errorFlag = true;
+    var errorDate = document.createElement('p');
+    errorDate.setAttribute('class', 'message');
+    errorDate.innerText = 'DATEを入力してください。';
+    errorArea.appendChild(errorDate);
+  } else if (!dateFormat) {
+    //DATEのフォーマットが不正だったら、エラー用フラグを立てて、エラーメッセージを表示
+    var errorFlag = true;
+    var errorDate = document.createElement('p');
+    errorDate.setAttribute('class', 'message');
+    errorDate.innerText = 'DATEは「YYYY/MM/DD」の形式（例：2007/09/05）で入力してください。';
+    errorArea.appendChild(errorDate);
+  }
+
+  //時間の型チェックをして戻り値を変数に格納
+  var openFormat = ckTime($('open').value);
+  var startFormat = ckTime($('start').value);
+
+  //OPENが入力されていて、かつフォーマットが不正の場合は、エラー用フラグを立てて、エラーメッセージを表示
+  if($('open').value == '') {
+  } else if (!openFormat) {
+    var errorFlag = true;
+    var errorOpen = document.createElement('p');
+    errorOpen.setAttribute('class', 'message');
+    errorOpen.innerText = 'OPENは「HH:MM」の形式（例：18:30）で入力してください。';
+    errorArea.appendChild(errorOpen);
+  }
+
+  //STARTが入力されていて、かつフォーマットが不正の場合は、エラー用フラグを立てて、エラーメッセージを表示
+  if($('start').value == '') {
+  } else if (!startFormat) {
+    var errorFlag = true;
+    var errorStart = document.createElement('p');
+    errorStart.setAttribute('class', 'message');
+    errorStart.innerText = 'STARTは「HH:MM」の形式（例：19:00）で入力してください。';
+    errorArea.appendChild(errorStart);
+  }
+
+  //アーティスト欄の数だけ入力チェックして、未入力だったら、エラー用フラグを立てて、エラーメッセージを表示
+  for(var i=0; i<allArtistNum; i++) {
+    if(artistList[i].value == '') {
+      var errorFlag = true;
+      var errorArtist = document.createElement('p');
+      errorArtist.setAttribute('class', 'message');
+      errorArtist.innerText = 'ARTIST' + (i+1) + 'を入力してください。';
+      errorArea.appendChild(errorArtist);
+    }
+  }
+
+  //URLの型チェックをして戻り値を変数に格納
+  var infoFormat = isUrl($('info').value);
+  var reportFormat = isUrl($('report').value);
+
+  //INFOが入力されていて、かつフォーマットが不正の場合は、エラー用フラグを立てて、エラーメッセージを表示
+  if($('info').value == '') {
+  } else if (!infoFormat) {
+    var errorFlag = true;
+    var errorInfo = document.createElement('p');
+    errorInfo.setAttribute('class', 'message');
+    errorInfo.innerText = 'INFOはURLの形式（例：http://hatsune-official.com）で入力してください。';
+    errorArea.appendChild(errorInfo);
+  }
+
+  //REPORTが入力されていて、かつフォーマットが不正の場合は、エラー用フラグを立てて、エラーメッセージを表示
+  if($('report').value == '') {
+  } else if (!reportFormat) {
+    var errorFlag = true;
+    var errorReport = document.createElement('p');
+    errorReport.setAttribute('class', 'message');
+    errorReport.innerText = 'REPORTはURLの形式（例：http://hatsune-official.com）で入力してください。';
+    errorArea.appendChild(errorReport);
+  }
+
+  //入力エラーがなかったら登録処理を実行
+  if(!errorFlag) {
+    //登録用オブジェクトの内容をcount番号のlocalStorageへ上書き保存
+    localStorage.setItem(
+      'live' + count,
+      JSON.stringify(item)
+    );
+    //登録後、一覧画面へ遷移
+    location.href = 'index.html';
+  } else {
+    //入力エラーがあったら、ページ最上部へアンカー移動
+    location.href = '#error';
+  }
 
 }
 
