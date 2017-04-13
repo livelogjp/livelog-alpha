@@ -11,6 +11,16 @@
 
 <hr>
 
+<form name="form" onsubmit="return false;">
+
+<select name="year" onChange="changeYear(this);">
+<option value="2018">2018</option>
+<option value="2017" selected>2017</option>
+<option value="2016">2016</option>
+<option value="2015">2015</option>
+<option value="2014">2014</option>
+</select>
+
 <ul id="info">
 </ul>
 
@@ -18,6 +28,8 @@
 <p id="clear"></p>
 <p id="export"></p>
 <p id="import"><a href="import.html">インポート</a></p>
+
+</form>
 
 <hr>
 
@@ -37,50 +49,86 @@ function arrayJoin(delimiter, object) {
   return ret;
 }
 
-//☆localStorageにデータが登録されていたら一覧表示する処理
-if(localStorage.length > 0) {
+//ページをロードしたらライブ一覧表示を実行
+displayList();
 
-  //localStorageのKey-Valueを格納するための配列を生成
-  var key = new Array();
-  var item = new Array();
+//プルダウンを選択したらライブ一覧表示を実行
+function changeYear(obj){
+  displayList();
+}
 
-  for(var i=(localStorage.length - 1); i>=0; i--) {
+//☆プルダウンで選択されている年のライブ一覧を表示する関数
+function displayList() {
 
-    //localStorageのKey-Value値を各配列に代入
-    key[i] = localStorage.key(i);
-    item[i] = JSON.parse(
-      localStorage.getItem(key[i])
-    );
+  //プルダウンで選択されている年を取得
+  var year = document.form.year.value;
 
-    var count =  Number(key[i].replace('live', ''));
+  //☆localStorageにデータが登録されていたら一覧表示する処理
+  if(localStorage.length > 0) {
 
-    //artist0〜artist*の値を配列で取得
-    var artistsItemLabel = Object.keys(item[i].artists);
+    //localStorageのKey-Valueを格納するための配列を生成
+    var key = new Array();
+    var allItem = new Array();
 
-    //アーティスト名一覧を格納するための配列を作成
-    var artistsItem = [];
+    //最初にライブ一覧の表示内容を初期化（プルダウン選択時のリロード対策）
+    $('info').innerHTML = '';
 
-    //アーティスト用の配列に登録されている分だけのアーティスト名を入力
-    for (j = 0; j < artistsItemLabel.length; j++) {
-      var currentArtsitLabel = 'artist' + j;
-      artistsItem[j] = item[i].artists[currentArtsitLabel].name;
+    for(var i=0; i<localStorage.length; i++) {
+      //localStorageのKey-Value値を各配列に代入
+      key[i] = localStorage.key(i);
+      allItem[i] = JSON.parse(
+        localStorage.getItem(key[i])
+      );
     }
 
-    //アーティスト名の配列をつなげて文字列に変換
-    var artistsItemJoin = arrayJoin('、', artistsItem);
+    //localStorageから読み込んだデータから、選択中の年のデータだけ抽出
+    var currentItem = allItem.filter(function(item, index){
+      if ((item.date).indexOf(year) >= 0) return true;
+    });
 
-    //ライブ情報を表示
-    $('info').innerHTML += '<li><p>' + item[i].date + '</p><p>' + item[i].title + '＠' + item[i].area + ' ' + item[i].place + '</p><p>OPEN ' + item[i].open + ' / START ' + item[i].start + '</p><p>出演：' + artistsItemJoin + '</p><p><a href="detail.html?live=' + count + '">詳細</a></p></li>';
+    //抽出したデータを日時が新しい順にソート
+    currentItem.sort(function(a, b) {
+      return ( a.date < b.date ? 1 : -1);
+    });
 
+    if (currentItem.length > 0) {
+      //プルダウンで選択された年にライブが登録されていたら、日付が新しい順に一覧表示
+      for(var i=0; i<currentItem.length; i++) {
+
+        //artist0〜artist*の値を配列で取得
+        var artistsItemLabel = Object.keys(currentItem[i].artists);
+
+        //アーティスト名一覧を格納するための配列を作成
+        var artistsItem = [];
+
+        //アーティスト用の配列に登録されている分だけのアーティスト名を入力
+        for (j = 0; j < artistsItemLabel.length; j++) {
+          var currentArtsitLabel = 'artist' + j;
+          artistsItem[j] = currentItem[i].artists[currentArtsitLabel].name;
+        }
+
+        //アーティスト名の配列をつなげて文字列に変換
+        var artistsItemJoin = arrayJoin('、', artistsItem);
+
+        $('info').innerHTML += '<li><p>' + currentItem[i].date + '</p><p>' + currentItem[i].title + '＠' + currentItem[i].area + ' ' + currentItem[i].place + '</p><p>OPEN ' + currentItem[i].open + ' / START ' + currentItem[i].start + '</p><p>出演：' + artistsItemJoin + '</p><p><a href="detail.html?live=' + currentItem[i].id + '">詳細</a></p></li>';
+
+      }
+
+    } else {
+      //プルダウンで選択された年にライブが登録されていなかったら文言を表示
+      $('info').innerHTML = '<li>ライブが登録されていません。</li>';
+    }
+
+    $('clear').innerHTML = '<button onclick="allDataClear();">データクリア</button>';
+    $('export').innerHTML = '<a href="export.html">エクスポート</a>';
+
+  } else {
+    //データが登録されていなかったら文言を表示
+    $('info').innerHTML = '<li>ライブが登録されていません。</li>';
   }
 
-  $('clear').innerHTML += '<button onclick="allDataClear();">データクリア</button>';
-  $('export').innerHTML += '<a href="export.html">エクスポート</a>';
-
-} else {
-  //データが登録されていなかったら文言を表示
-  $('info').innerHTML += '<li>ライブが登録されていません。</li>';
 }
+
 
 //☆データを全削除する処理
 function allDataClear() {
