@@ -7,7 +7,7 @@
 </head>
 <body>
 
-<p><a href="index.html">＜</a>　<span id="edit"></span></p>
+<p><a href="index.html" id="back">＜</a>　<span id="edit"></span></p>
 
 <hr>
 
@@ -209,6 +209,10 @@ if(urlParam) {
     $('ticket').innerHTML = item.ticket;
     $('memo').innerHTML = item.memo;
     $('report').innerHTML = '<a href="' + item.report + '" target="_blank">' + item.report + '</a>';
+
+    //トップへ戻るリンクを、そのライブの年のパラメータに設定する
+    var itemYear = item.date.slice(0, 4);
+    $('back').setAttribute('href', 'index.html?year=' + itemYear);
 
   }
 

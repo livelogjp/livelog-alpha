@@ -13,13 +13,8 @@
 
 <form name="form" onsubmit="return false;">
 
-<select name="year" onChange="changeYear(this);">
-<option value="2018">2018</option>
-<option value="2017" selected>2017</option>
-<option value="2016">2016</option>
-<option value="2015">2015</option>
-<option value="2014">2014</option>
-</select>
+<div id="pulldown">
+</div>
 
 <ul id="info">
 </ul>
@@ -49,86 +44,138 @@ function arrayJoin(delimiter, object) {
   return ret;
 }
 
-//ページをロードしたらライブ一覧表示を実行
-displayList();
+// URLのパラメータから「?」を除いた文字列を取得
+var urlParam = location.search.substring(1);
 
-//プルダウンを選択したらライブ一覧表示を実行
-function changeYear(obj){
-  displayList();
-}
+// URLにパラメータが存在する場合
+if(urlParam) {
+  // パラメータの「?」以降の文字列を「&」で分割して配列paramに代入
+  var param = urlParam.split('&');
 
-//☆プルダウンで選択されている年のライブ一覧を表示する関数
-function displayList() {
+  var paramArray = [];
 
-  //プルダウンで選択されている年を取得
-  var year = document.form.year.value;
-
-  //☆localStorageにデータが登録されていたら一覧表示する処理
-  if(localStorage.length > 0) {
-
-    //localStorageのKey-Valueを格納するための配列を生成
-    var key = new Array();
-    var allItem = new Array();
-
-    //最初にライブ一覧の表示内容を初期化（プルダウン選択時のリロード対策）
-    $('info').innerHTML = '';
-
-    for(var i=0; i<localStorage.length; i++) {
-      //localStorageのKey-Value値を各配列に代入
-      key[i] = localStorage.key(i);
-      allItem[i] = JSON.parse(
-        localStorage.getItem(key[i])
-      );
-    }
-
-    //localStorageから読み込んだデータから、選択中の年のデータだけ抽出
-    var currentItem = allItem.filter(function(item, index){
-      if ((item.date).indexOf(year) >= 0) return true;
-    });
-
-    //抽出したデータを日時が新しい順にソート
-    currentItem.sort(function(a, b) {
-      return ( a.date < b.date ? 1 : -1);
-    });
-
-    if (currentItem.length > 0) {
-      //プルダウンで選択された年にライブが登録されていたら、日付が新しい順に一覧表示
-      for(var i=0; i<currentItem.length; i++) {
-
-        //artist0〜artist*の値を配列で取得
-        var artistsItemLabel = Object.keys(currentItem[i].artists);
-
-        //アーティスト名一覧を格納するための配列を作成
-        var artistsItem = [];
-
-        //アーティスト用の配列に登録されている分だけのアーティスト名を入力
-        for (j = 0; j < artistsItemLabel.length; j++) {
-          var currentArtsitLabel = 'artist' + j;
-          artistsItem[j] = currentItem[i].artists[currentArtsitLabel].name;
-        }
-
-        //アーティスト名の配列をつなげて文字列に変換
-        var artistsItemJoin = arrayJoin('、', artistsItem);
-
-        $('info').innerHTML += '<li><p>' + currentItem[i].date + '</p><p>' + currentItem[i].title + '＠' + currentItem[i].area + ' ' + currentItem[i].place + '</p><p>OPEN ' + currentItem[i].open + ' / START ' + currentItem[i].start + '</p><p>出演：' + artistsItemJoin + '</p><p><a href="detail.html?live=' + currentItem[i].id + '">詳細</a></p></li>';
-
-      }
-
-    } else {
-      //プルダウンで選択された年にライブが登録されていなかったら文言を表示
-      $('info').innerHTML = '<li>ライブが登録されていません。</li>';
-    }
-
-    $('clear').innerHTML = '<button onclick="allDataClear();">データクリア</button>';
-    $('export').innerHTML = '<a href="export.html">エクスポート</a>';
-
-  } else {
-    //データが登録されていなかったら文言を表示
-    $('info').innerHTML = '<li>ライブが登録されていません。</li>';
+  //パラメータのaaa=bbbという部分をペアで取り出して連想配列paramArrayに代入
+  for (i = 0; i < param.length; i++) {
+    var paramItem = param[i].split('=');
+    paramArray[paramItem[0]] = paramItem[1];
   }
 
 }
 
+//☆localStorageにデータが登録されていたら一覧表示する処理
+if(localStorage.length > 0) {
+
+  //localStorageのKey-Valueを格納するための配列を生成
+  var key = new Array();
+  var allItem = new Array();
+
+  for(var i=0; i<localStorage.length; i++) {
+    //localStorageのKey-Value値を各配列に代入
+    key[i] = localStorage.key(i);
+    allItem[i] = JSON.parse(
+      localStorage.getItem(key[i])
+    );
+  }
+
+  //localStorageに登録された全データを日時が新しい順にソート
+  allItem.sort(function(a, b) {
+    return ( a.date < b.date ? 1 : -1);
+  });
+
+  //localStorageに登録されている全ての年を格納する配列を生成
+  var allYearList = new Array();
+
+  //日時のうち年（YYYY）の部分だけ切り出してallYearListに格納
+  for(var i=0; i<allItem.length; i++) {
+    var dateString = allItem[i].date;
+    var yearString = dateString.slice(0, 4);
+    allYearList[i] = yearString;
+  }
+
+  //allYearListから重複分を除いてユニークな年の一覧を取得
+  var yearList = allYearList.filter(function (x, i, self) {
+    return self.indexOf(x) === i;
+  });
+
+  //年の一覧をソートして、逆順に並べ替え
+  yearList.sort();
+  yearList.reverse();
+
+  //登録されている年の中から一番新しい年を取得
+  var maxYear = Math.max.apply(null, yearList);
+
+  //現在の年を取得
+  var now = new Date();
+  var currentYear = now.getFullYear();
+
+  if (urlParam && paramArray.year) {
+    var selectedYear = paramArray.year;
+  } else if (maxYear >= currentYear) {
+    //現在よりも未来の年が登録されている場合は、今年をselectedYearにする
+    var selectedYear = currentYear;
+  } else {
+    //現在よりも過去の年しか登録されていない場合は、その中で一番新しい年をselectedYearにする
+    var selectedYear = maxYear;
+  }
+
+  //年のプルダウンを格納するためのセレクトボックスを生成
+  var yearSelect = document.createElement('select');
+  yearSelect.setAttribute('name', 'year');
+  yearSelect.setAttribute('onChange', 'changeYear(this);');
+  $('pulldown').appendChild(yearSelect);
+
+  //セレクトボックスの中に登録されている年のプルダウンを追加
+  for(var i=0; i<yearList.length; i++) {
+    var yearOption = document.createElement('option');
+    yearOption.innerText = yearList[i];
+    yearOption.setAttribute('value', yearList[i]);
+    //selectedYearと同じ値があったら選択状態にする
+    if (yearList[i] == selectedYear) {
+      yearOption.setAttribute('selected', 'selected');
+    }
+    yearSelect.appendChild(yearOption);
+  }
+
+  //localStorageから読み込んだデータから、選択中の年のデータだけ抽出
+  var currentItem = allItem.filter(function(item, index){
+    if ((item.date).indexOf(selectedYear) >= 0) return true;
+  });
+
+  //プルダウンで選択された年にライブが登録されていたら、日付が新しい順に一覧表示
+  for(var i=0; i<currentItem.length; i++) {
+
+    //artist0〜artist*の値を配列で取得
+    var artistsItemLabel = Object.keys(currentItem[i].artists);
+
+    //アーティスト名一覧を格納するための配列を作成
+    var artistsItem = [];
+
+    //アーティスト用の配列に登録されている分だけのアーティスト名を入力
+    for (j = 0; j < artistsItemLabel.length; j++) {
+      var currentArtsitLabel = 'artist' + j;
+      artistsItem[j] = currentItem[i].artists[currentArtsitLabel].name;
+    }
+
+    //アーティスト名の配列をつなげて文字列に変換
+    var artistsItemJoin = arrayJoin('、', artistsItem);
+
+    $('info').innerHTML += '<li><p>' + currentItem[i].date + '</p><p>' + currentItem[i].title + '＠' + currentItem[i].area + ' ' + currentItem[i].place + '</p><p>OPEN ' + currentItem[i].open + ' / START ' + currentItem[i].start + '</p><p>出演：' + artistsItemJoin + '</p><p><a href="detail.html?live=' + currentItem[i].id + '">詳細</a></p></li>';
+
+  }
+
+  $('clear').innerHTML = '<button onclick="allDataClear();">データクリア</button>';
+  $('export').innerHTML = '<a href="export.html">エクスポート</a>';
+
+} else {
+  //データが登録されていなかったら文言を表示
+  $('info').innerHTML = '<li>ライブが登録されていません。</li>';
+}
+
+function changeYear(obj){
+
+  location.href = 'index.html?year=' + obj.value;
+
+}
 
 //☆データを全削除する処理
 function allDataClear() {
