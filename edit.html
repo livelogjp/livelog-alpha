@@ -342,7 +342,7 @@ function liveDataSave() {
   }
 
   //登録用のオブジェクトに各フォームの値を代入
-  item.id = count;
+  item.id = Number(count);
   item.title = $('title').value;
   item.date = $('date').value;
   item.open = $('open').value;

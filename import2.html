@@ -13,22 +13,19 @@
 
 <h1>IMPORT</h1>
 
-<p>ローカルに保存されたJSONファイルを選択してください。</p>
+<form name="form" onsubmit="return false;">
 
-<form name="form">
-
-<p><input type="file" id="selfile"</p>
+<p>保存したJSONデータを、以下のテキストエリアにペーストして読み込んでください。</p>
 
 <p>
-JSONファイルから読み込んだ結果：<br>
-<textarea name="txt" cols="30" rows="10" readonly></textarea>
+<textarea name="txt" cols="30" rows="10" id="import"></textarea>
 </p>
+
+<button onclick="dataImport();">読み込み</button>
 
 </form>
 
 <div id="result"></div>
-
-<p>コピー＆ペーストでインポートする場合は<a href="import2.html">こちら</a></p>
 
 <hr>
 
@@ -37,8 +34,6 @@ JSONファイルから読み込んだ結果：<br>
 <script>
 
 function $(id){return document.getElementById(id);}
-
-var obj1 = document.getElementById("selfile");
 
 //☆読み込み完了した時に結果を表示する関数
 function displayResult() {
@@ -51,24 +46,12 @@ function displayResult() {
   $('result').appendChild(resultLink);
 }
 
-//☆ダイアログでファイルが選択された時の処理
-obj1.addEventListener("change",function(evt){
+function dataImport() {
 
-  var file = evt.target.files;
-
-  //FileReaderの作成
-  var reader = new FileReader();
-  //テキスト形式で読み込む
-  reader.readAsText(file[0]);
-
-  //読込終了後の処理
-  reader.onload = function(ev){
-    //テキストエリアに表示する
-    document.form.txt.value = reader.result;
-    //読み込んだ結果を変数に代入
-    var loadData = reader.result;
-    //インポートデータをJSONオブジェクトに変換
-    var loadData = JSON.parse(loadData);
+  if ($('import').value == '') {
+    alert('データを入力してください。');
+  } else {
+    var loadData = JSON.parse($('import').value);
     //オブジェクトに登録されているデータの個数を取得
     var loadDataNum = Object.keys(loadData).length;
     //localStorageのkeyを格納するための配列を生成
@@ -85,11 +68,9 @@ obj1.addEventListener("change",function(evt){
       );
     }
     displayResult();
-
   }
 
-},false);
-
+}
 
 </script>
 

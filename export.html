@@ -19,7 +19,10 @@
 
 <p><a id="download" target="_blank">ダウンロード</a></p>
 
-<p><textarea id="copyArea" cols="30" rows="10"></textarea></p>
+<p>
+現在登録されているデータ内容：<br>
+<textarea id="copyArea" cols="30" rows="10" readonly></textarea>
+</p>
 
 </div>
 
@@ -73,7 +76,7 @@ if(localStorage.length > 0) {
   //ダウンロード用のリンクに生成されたBlobオブジェクトを指定
   $('download').setAttribute('href', window.URL.createObjectURL(blob));
   //ダウンロード用のファイル名を指定
-$('download').setAttribute('download', 'livelog.json');
+  $('download').setAttribute('download', 'livelog.json');
 
 } else {
   //localStorageにデータが登録されていなかったらエラー表示
