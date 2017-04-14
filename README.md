@@ -26,3 +26,4 @@ https://livelogjp.github.io/livelog-alpha/
 - [x] インポート・エクスポート機能
 - [x] 入力チェック
 - [x] データクリア前に確認ダイアログを表示
+- [ ] インポートするデータのJSON形式をチェックする
