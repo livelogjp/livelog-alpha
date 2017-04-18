@@ -34,6 +34,21 @@
 
 function $(id){return document.getElementById(id);}
 
+function getDate(){
+  var date = new Date();
+  var year = date.getFullYear();
+  var month = date.getMonth() + 1;
+  var date = date.getDate();
+  if (month < 10) {
+    month = "0" + month;
+  }
+  if (date < 10) {
+    date = "0" + date;
+  }
+  var strDate = year + month + date;
+  return strDate;
+}
+
 //☆エラーの時にフォームを消してエラー文言を表示する関数
 function displayError() {
   var errorMessage = document.createElement('p');
@@ -75,8 +90,9 @@ if(localStorage.length > 0) {
   window.URL = window.URL || window.webkitURL;
   //ダウンロード用のリンクに生成されたBlobオブジェクトを指定
   $('download').setAttribute('href', window.URL.createObjectURL(blob));
+
   //ダウンロード用のファイル名を指定
-  $('download').setAttribute('download', 'livelog.json');
+  $('download').setAttribute('download', 'livelog_' + getDate() + '.json');
 
 } else {
   //localStorageにデータが登録されていなかったらエラー表示
