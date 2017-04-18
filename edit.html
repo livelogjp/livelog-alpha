@@ -516,6 +516,12 @@ function liveDataSave() {
     errorStart.setAttribute('class', 'message');
     errorStart.innerText = 'STARTは「HH:MM」の形式（例：19:00）で入力してください。';
     errorArea.appendChild(errorStart);
+  } else if ($('open').value > $('start').value) {
+    var errorFlag = true;
+    var errorStart = document.createElement('p');
+    errorStart.setAttribute('class', 'message');
+    errorStart.innerText = 'STARTはOPENより後の時間にしてください。';
+    errorArea.appendChild(errorStart);
   }
 
   //アーティスト欄の数だけ入力チェックして、未入力だったら、エラー用フラグを立てて、エラーメッセージを表示
@@ -561,7 +567,8 @@ function liveDataSave() {
       JSON.stringify(item)
     );
     //登録後、一覧画面へ遷移
-    location.href = 'index.html';
+    var itemYear = item.date.slice(0, 4);
+    location.href = 'index.html?year=' + itemYear;
   } else {
     //入力エラーがあったら、ページ最上部へアンカー移動
     location.href = '#error';
@@ -576,7 +583,8 @@ function liveDataDelete() {
     //該当のライブ情報をlocalStorageから削除
     localStorage.removeItem('live' + count);
     //削除実行後、一覧画面へ遷移
-    location.href = 'index.html';
+    var itemYear = item.date.slice(0, 4);
+    location.href = 'index.html?year=' + itemYear;
   }
 }
 

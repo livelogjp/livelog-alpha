@@ -44,6 +44,34 @@ function arrayJoin(delimiter, object) {
   return ret;
 }
 
+//2つのキーで連想配列をソートする関数
+function ObjArraySort2(ary, key1, order1, key2, order2) {
+  var reverse1 = 1;
+  var reverse2 = 1;
+  if(order1 && order1.toLowerCase() == 'desc')
+    reverse1 = -1;
+  if(order2 && order2.toLowerCase() == 'desc')
+    reverse2 = -1;
+
+  ary.sort(function(a, b) {
+    // Compare 1st key
+    if(a[key1] < b[key1])
+      return -1 * reverse1;
+    else if(a[key1] > b[key1])
+      return 1 * reverse1;
+    else
+    {
+    // Compare 2nd key
+    if(a[key2] < b[key2])
+      return -1 * reverse2;
+    else if(a[key2] > b[key2])
+      return 1 * reverse2;
+    else
+      return 0;
+    }
+  });
+}
+
 // URLのパラメータから「?」を除いた文字列を取得
 var urlParam = location.search.substring(1);
 
@@ -77,10 +105,14 @@ if(localStorage.length > 0) {
     );
   }
 
-  //localStorageに登録された全データを日時が新しい順にソート
-  allItem.sort(function(a, b) {
-    return ( a.date < b.date ? 1 : -1);
-  });
+  //allItemにdateとopen/startを繋げた日時の項目を追加
+  for (item in allItem) {
+    allItem[item].dateOpen = allItem[item].date + ' ' + allItem[item].open;
+    allItem[item].dateStart = allItem[item].date + ' ' + allItem[item].start;
+  }
+
+  //open日時を第1キー、start日時を第2キーとしてallItemを降順にソート
+  ObjArraySort2(allItem, 'dateOpen', 'desc', 'dateStart', 'desc');
 
   //localStorageに登録されている全ての年を格納する配列を生成
   var allYearList = new Array();
