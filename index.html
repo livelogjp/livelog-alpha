@@ -191,7 +191,7 @@ if(localStorage.length > 0) {
     //アーティスト名の配列をつなげて文字列に変換
     var artistsItemJoin = arrayJoin('、', artistsItem);
 
-    $('info').innerHTML += '<li><p>' + currentItem[i].date + '</p><p>' + currentItem[i].title + '＠' + currentItem[i].area + ' ' + currentItem[i].place + '</p><p>OPEN ' + currentItem[i].open + ' / START ' + currentItem[i].start + '</p><p>出演：' + artistsItemJoin + '</p><p><a href="detail.html?live=' + currentItem[i].id + '">詳細</a></p></li>';
+    $('info').innerHTML += '<li><p>' + currentItem[i].date + '</p><p><a href="detail.html?live=' + currentItem[i].id + '">' + currentItem[i].title + '＠' + currentItem[i].area + ' ' + currentItem[i].place + '</a></p><p>OPEN ' + currentItem[i].open + ' / START ' + currentItem[i].start + '</p><p>ARTIST ' + artistsItemJoin + '</p><p>TICKET ' + currentItem[i].ticket + ' ' + currentItem[i].attendance + '</p></li>';
 
   }
 
