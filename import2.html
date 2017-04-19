@@ -109,42 +109,53 @@ function displayError() {
 function dataImport() {
 
   if ($('import').value == '') {
+
     alert('データを入力してください。');
+
   } else {
-    var loadData = JSON.parse($('import').value);
-    //オブジェクトに登録されているデータの個数を取得
-    var loadDataNum = Object.keys(loadData).length;
-    //localStorageのkeyを格納するための配列を生成
-    var key = Object.keys(loadData);
-    //localStorageのvalueを格納するための配列を生成
-    var value = Object.values(loadData);
 
-    //JSONチェック用の関数にkey, valueを渡して結果を変数に代入
-    var checkImport = jsonCheck(key, value);
+    try{
 
-    if(!checkImport) {
-      //falseが返ってきたら、読み込みを中止し、エラーメッセージを表示する
-      displayError();
-    } else {
-      //trueが返ってきたら、インポートを実行する
+      var loadData = JSON.parse($('import').value);
+      //オブジェクトに登録されているデータの個数を取得
+      var loadDataNum = Object.keys(loadData).length;
+      //localStorageのkeyを格納するための配列を生成
+      var key = Object.keys(loadData);
+      //localStorageのvalueを格納するための配列を生成
+      var value = Object.values(loadData);
 
-      //インポートする前にlocalStorageの中身を全削除
-      window.localStorage.clear();
-      //オブジェクトから読み取ったKey-ValueをlocalStorageへ保存
-      for(var i=0; i<loadDataNum; i++) {
-        localStorage.setItem(
-          key[i],
-          JSON.stringify(value[i])
-        );
+      //JSONチェック用の関数にkey, valueを渡して結果を変数に代入
+      var checkImport = jsonCheck(key, value);
+
+      if(!checkImport) {
+        //falseが返ってきたら、読み込みを中止し、エラーメッセージを表示する
+        displayError();
+      } else {
+        //trueが返ってきたら、インポートを実行する
+
+        //インポートする前にlocalStorageの中身を全削除
+        window.localStorage.clear();
+        //オブジェクトから読み取ったKey-ValueをlocalStorageへ保存
+        for(var i=0; i<loadDataNum; i++) {
+          localStorage.setItem(
+            key[i],
+            JSON.stringify(value[i])
+          );
+        }
+        displayResult();
+
       }
-      displayResult();
+
+    }catch(e){
+
+      console.log(e);
+      displayError();
 
     }
 
   }
 
 }
-
 
 //☆JSONのフォーマットをチェックする関数
 function jsonCheck(key, value) {
