@@ -26,7 +26,7 @@
 
 <p>
 JSONファイルから読み込んだ結果：<br>
-<textarea name="txt" cols="30" rows="10" readonly></textarea>
+<textarea name="txt" cols="30" rows="10"></textarea>
 </p>
 
 </form>
@@ -132,34 +132,45 @@ obj1.addEventListener('change',function(evt){
     document.form.txt.value = reader.result;
     //読み込んだ結果を変数に代入
     var loadData = reader.result;
-    //インポートデータをJSONオブジェクトに変換
-    var loadData = JSON.parse(loadData);
-    //オブジェクトに登録されているデータの個数を取得
-    var loadDataNum = Object.keys(loadData).length;
-    //localStorageのkeyを格納するための配列を生成
-    var key = Object.keys(loadData);
-    //localStorageのvalueを格納するための配列を生成
-    var value = Object.values(loadData);
 
-    //JSONチェック用の関数にkey, valueを渡して結果を変数に代入
-    var checkImport = jsonCheck(key, value);
+    try{
 
-    if(!checkImport) {
-      //falseが返ってきたら、読み込みを中止し、エラーメッセージを表示する
-      displayError();
-    } else {
-      //trueが返ってきたら、インポートを実行する
+      //インポートデータをJSONオブジェクトに変換
+      var loadData = JSON.parse(loadData);
 
-      //インポートする前にlocalStorageの中身を全削除
-      window.localStorage.clear();
-      //オブジェクトから読み取ったKey-ValueをlocalStorageへ保存
-      for(var i=0; i<loadDataNum; i++) {
-        localStorage.setItem(
-          key[i],
-          JSON.stringify(value[i])
-        );
+      //オブジェクトに登録されているデータの個数を取得
+      var loadDataNum = Object.keys(loadData).length;
+      //localStorageのkeyを格納するための配列を生成
+      var key = Object.keys(loadData);
+      //localStorageのvalueを格納するための配列を生成
+      var value = Object.values(loadData);
+
+      //JSONチェック用の関数にkey, valueを渡して結果を変数に代入
+      var checkImport = jsonCheck(key, value);
+
+      if(!checkImport) {
+        //falseが返ってきたら、読み込みを中止し、エラーメッセージを表示する
+        displayError();
+      } else {
+        //trueが返ってきたら、インポートを実行する
+
+        //インポートする前にlocalStorageの中身を全削除
+        window.localStorage.clear();
+        //オブジェクトから読み取ったKey-ValueをlocalStorageへ保存
+        for(var i=0; i<loadDataNum; i++) {
+          localStorage.setItem(
+            key[i],
+            JSON.stringify(value[i])
+          );
+        }
+        displayResult();
+
       }
-      displayResult();
+
+    }catch(e){
+
+      console.log(e);
+      displayError();
 
     }
 
