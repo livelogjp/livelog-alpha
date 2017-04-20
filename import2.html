@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ライブをメモするLivelog</title>
+  <style>
+  .message {
+    color: #ff0000;
+  }
+  </style>
 </head>
 <body>
 
@@ -26,6 +31,7 @@
 </form>
 
 <div id="result"></div>
+<p id="error"></p>
 
 <hr>
 
@@ -117,12 +123,15 @@ function dataImport() {
     try{
 
       var loadData = JSON.parse($('import').value);
+
       //オブジェクトに登録されているデータの個数を取得
       var loadDataNum = Object.keys(loadData).length;
       //localStorageのkeyを格納するための配列を生成
       var key = Object.keys(loadData);
       //localStorageのvalueを格納するための配列を生成
-      var value = Object.values(loadData);
+      var value = Object.keys(loadData).map(function(key) {
+          return loadData[key];
+      });
 
       //JSONチェック用の関数にkey, valueを渡して結果を変数に代入
       var checkImport = jsonCheck(key, value);
@@ -148,8 +157,8 @@ function dataImport() {
 
     }catch(e){
 
-      console.log(e);
       displayError();
+      $('error').innerText = e;
 
     }
 
@@ -209,7 +218,9 @@ function jsonCheck(key, value) {
     }
 
     //各データのartist内の配列を取得
-    var artist = Object.values(value[i].artists);
+    var artist = Object.keys(value[i].artists).map(function(key) {
+        return value[i].artists[key];
+    });
 
     //各データのartists内の項目チェック
     for (obj in artist) {
@@ -224,7 +235,11 @@ function jsonCheck(key, value) {
       var setlist = artist[obj].setlist;
       var setlistKeys = Object.keys(setlist).sort();
 
-      if (!Object.values(setlist).length) {
+      var setlistValues = Object.keys(setlist).map(function(key) {
+          return setlist[key];
+      });
+
+      if (!setlistValues.length) {
 
       } else {
 
@@ -247,7 +262,11 @@ function jsonCheck(key, value) {
       var members = artist[obj].members;
       var membersKeys = Object.keys(members).sort();
 
-      if (!Object.values(members).length) {
+      var memberValues = Object.keys(members).map(function(key) {
+          return members[key];
+      });
+
+      if (!memberValues.length) {
 
       } else {
 
@@ -265,9 +284,6 @@ function jsonCheck(key, value) {
         }
 
       }
-
-      //membersの値の一覧をオブジェクトとして取得
-      var memberValues = Object.values(members);
 
       for (obj2 in memberValues) {
         //members内のkeyの一覧を取得

@@ -96,7 +96,9 @@ if(urlParam) {
       $('artist0').innerHTML = '<p>' + item.artists.artist0.name + '</p>';
       //1人目のセットリストの内容をオブジェクトとして取得
       var firstSetlistNum = Object.keys(item.artists.artist0.setlist).length;
-      var firstSetlistItem = Object.values(item.artists.artist0.setlist);
+      var firstSetlistItem = Object.keys(item.artists.artist0.setlist).map(function(key) {
+          return item.artists.artist0.setlist[key];
+      });
       //1人目のアーティスト名の下にセットリスト欄を追加
       var firstArtistList = document.getElementById('artist0');
       var firstSetlistArea = document.createElement('div');
@@ -156,7 +158,9 @@ if(urlParam) {
         currentArtistList.parentNode.appendChild(nextArtistList);
         //次のアーティストのセットリストの内容をオブジェクトとして取得
         var nextSetlistNum = Object.keys(item.artists[nextArtistId].setlist).length;
-        var nextSetlistItem = Object.values(item.artists[nextArtistId].setlist);
+        var nextSetlistItem = Object.keys(item.artists[nextArtistId].setlist).map(function(key) {
+            return item.artists[nextArtistId].setlist[key];
+        });
         //次のアーティスト名の下にセットリスト欄を追加
         var nextSetlistArea = document.createElement('div');
         nextSetlistArea.innerHTML = '<p>SETLIST（<a href="setlist.html?live=' + count + '&artist=' + i + '">編集</a>）</p>';
