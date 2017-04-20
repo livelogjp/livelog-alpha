@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ライブをメモするLivelog</title>
+  <style>
+  .attendance {
+    color: #ff0000;
+  }
+  </style>
 </head>
 <body>
 
@@ -19,10 +24,8 @@
 <ul id="info">
 </ul>
 
-<button onclick="location.href='edit.html';">新規登録</button>
-<p id="clear"></p>
-<p id="export"></p>
-<p id="import"><a href="import.html">インポート</a></p>
+<p><button onclick="location.href='edit.html';">新規登録</button> <span id="clear"></span></p>
+<p><span id="export"></span> <button onclick="location.href='import.html';">インポート</button></p>
 
 </form>
 
@@ -189,24 +192,27 @@ if(localStorage.length > 0) {
     }
 
     //アーティスト名の配列をつなげて文字列に変換
-    var artistsItemJoin = arrayJoin('、', artistsItem);
+    var artistsItemJoin = arrayJoin(', ', artistsItem);
 
-    $('info').innerHTML += '<li><p>' + currentItem[i].date + '</p><p><a href="detail.html?live=' + currentItem[i].id + '">' + currentItem[i].title + '＠' + currentItem[i].area + ' ' + currentItem[i].place + '</a></p><p>OPEN ' + currentItem[i].open + ' / START ' + currentItem[i].start + '</p><p>ARTIST ' + artistsItemJoin + '</p><p>TICKET ' + currentItem[i].ticket + ' ' + currentItem[i].attendance + '</p></li>';
+    $('info').innerHTML += '<li><p><a href="detail.html?live=' + currentItem[i].id + '">' + currentItem[i].title + '＠' + currentItem[i].area + ' ' + currentItem[i].place + '</a></p><p>' + currentItem[i].date + ' OPEN ' + currentItem[i].open + ' / START ' + currentItem[i].start + '</p><p>ARTIST ' + artistsItemJoin + '</p><p>TICKET ' + currentItem[i].ticket + ' <span class="attendance">' + currentItem[i].attendance + '</span></p></li>';
 
   }
 
   $('clear').innerHTML = '<button onclick="allDataClear();">データクリア</button>';
-  $('export').innerHTML = '<a href="export.html">エクスポート</a>';
+  var exportButton = document.createElement('button');
+  exportButton.innerText = 'エクスポート';
+  exportButton.setAttribute('onclick', 'location.href="export.html";');
+  $('export').appendChild(exportButton);
 
 } else {
   //データが登録されていなかったら文言を表示
   $('info').innerHTML = '<li>ライブが登録されていません。</li>';
 }
 
+//☆年のプルダウンを選択した時の処理
 function changeYear(obj){
-
+  //選択した年のパラメーターを付けてリロード
   location.href = 'index.html?year=' + obj.value;
-
 }
 
 //☆データを全削除する処理
