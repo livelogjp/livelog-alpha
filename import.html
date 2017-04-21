@@ -265,6 +265,7 @@ function jsonCheck(key, value) {
         for(var j=0; j<setlistKeys.length; j++) {
           setlistLabels[j] = 'track' + j;
         }
+        setlistLabels.sort();
 
         //setlistのkeyの一覧が「track0, track1, track2...」の形式と違っていたら、エラー用フラグを立てる
         if (setlistKeys.toString() !== setlistLabels.toString()) {
@@ -292,6 +293,7 @@ function jsonCheck(key, value) {
         for(var j=0; j<membersKeys.length; j++) {
           memberLabels[j] = 'member' + j;
         }
+        memberLabels.sort();
 
         //membersのkeyの一覧が「member0, member1, member2...」の形式と違っていたら、エラー用フラグを立てる
         if (membersKeys.toString() !== memberLabels.toString()) {
