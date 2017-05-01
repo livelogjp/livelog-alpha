@@ -200,7 +200,7 @@ if(urlParam) {
           for (member in nextMemberItem) {
             var additionalMember = document.createElement('li');
             var additionalMemberId = nextMemberItem[member];
-            additionalMember.innerText = item.artists[nextArtistId].members[additionalMemberId].part + '：' + item.artists[nextArtistId].members[additionalMemberId].name;
+            additionalMember.innerText = item.artists[nextArtistId].members[additionalMemberId].part + ' ' + item.artists[nextArtistId].members[additionalMemberId].name;
             nextMemberList.appendChild(additionalMember);
           }
         }
