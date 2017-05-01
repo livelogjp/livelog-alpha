@@ -139,7 +139,7 @@ if(urlParam) {
         for (member in firstMemberItem) {
           var additionalMember = document.createElement('li');
           var additionalMemberId = firstMemberItem[member];
-          additionalMember.innerText = item.artists.artist0.members[additionalMemberId].part + '：' + item.artists.artist0.members[additionalMemberId].name;
+          additionalMember.innerText = item.artists.artist0.members[additionalMemberId].part + ' ' + item.artists.artist0.members[additionalMemberId].name;
           firstMemberList.appendChild(additionalMember);
         }
       }
