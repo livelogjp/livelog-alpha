@@ -227,6 +227,9 @@ function jsonCheck(key, value) {
       artistLabels[j] = 'artist' + j;
     }
 
+    //正しいartistsのkey一覧をソート
+    var artistLabels = artistLabels.sort();
+
     //artistsのkeyの一覧が「artist0, artist1, artist2...」の形式と違っていたら、エラー用フラグを立てる
     if (checkArtistKeys.toString() !== artistLabels.toString()) {
       var errorFlag = true;
