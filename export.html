@@ -45,6 +45,10 @@ function getDate(){
   if (date < 10) {
     date = "0" + date;
   }
+  //取得した年、月、日と文字列に変換
+  var year = String(year) ;
+  var month = String(month) ;
+  var date = String(date) ;
   var strDate = year + month + date;
   return strDate;
 }
