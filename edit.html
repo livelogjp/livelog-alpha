@@ -583,8 +583,7 @@ function liveDataDelete() {
     //該当のライブ情報をlocalStorageから削除
     localStorage.removeItem('live' + count);
     //削除実行後、一覧画面へ遷移
-    var itemYear = item.date.slice(0, 4);
-    location.href = 'index.html?year=' + itemYear;
+    location.href = 'index.html';
   }
 }
 
